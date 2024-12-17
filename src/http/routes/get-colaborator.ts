@@ -7,10 +7,10 @@ import { db } from '../../database/connection'
 
 export async function getColaborator(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    '/colaborator/:colaboratorId',
+    '/colaborators/:colaboratorId',
     {
       schema: {
-        summary: 'Create Colaborator',
+        summary: 'Get Colaborator',
         tags: ['colaborators'],
         params: z.object({
           colaboratorId: z.string().cuid2(),

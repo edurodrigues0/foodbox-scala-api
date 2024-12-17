@@ -10,7 +10,7 @@ import { encryptCPF } from '../../utils/encrypt-cpf'
 
 export async function createColaborator(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
-    '/colaborator',
+    '/colaborators',
     {
       schema: {
         summary: 'Create Colaborator',
