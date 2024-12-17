@@ -15,6 +15,17 @@ export async function getColaborator(app: FastifyInstance) {
         params: z.object({
           colaboratorId: z.string().cuid2(),
         }),
+        response: {
+          200: z.object({
+            colaborator: z.object({
+              id: z.string().cuid2(),
+              name: z.string(),
+            }),
+          }),
+          404: z.object({
+            message: z.string(),
+          }),
+        },
       },
     },
     async (request, reply) => {

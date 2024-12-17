@@ -20,6 +20,18 @@ export async function createColaborator(app: FastifyInstance) {
           // registration: z.number(),
           cpf: z.string(),
         }),
+        response: {
+          201: z
+            .object({
+              colaborator_name: z.string(),
+            })
+            .describe('Success status'),
+          404: z
+            .object({
+              message: z.string(),
+            })
+            .describe('Error, conflict data'),
+        },
       },
     },
     async (request, reply) => {
@@ -35,7 +47,7 @@ export async function createColaborator(app: FastifyInstance) {
       })
 
       if (colaboratorAlreadyExist) {
-        return reply.status(400).send({ message: 'Colaborador já existe.' })
+        return reply.status(404).send({ message: 'Colaborador já existe.' })
       }
 
       const [colaborator] = await db

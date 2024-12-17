@@ -18,6 +18,21 @@ export async function getColaborators(app: FastifyInstance) {
           pageIndex: z.coerce.number().default(0),
           colaboratorName: z.string().optional(),
         }),
+        response: {
+          200: z.object({
+            colaborators: z.array(
+              z.object({
+                id: z.string().cuid2(),
+                name: z.string(),
+              }),
+            ),
+            meta: z.object({
+              page_index: z.number(),
+              per_page: z.number(),
+              total_count: z.number(),
+            }),
+          }),
+        },
       },
     },
     async (request, reply) => {
