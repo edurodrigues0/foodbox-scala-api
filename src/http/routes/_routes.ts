@@ -4,6 +4,9 @@ import { getColaborator } from './get-colaborator'
 import { getColaborators } from './get-colaborators'
 import { updateColaborator } from './update-colaborator'
 import { registerUsers } from './register-user'
+import { getRestaurant } from './get-restaurant'
+import { getRestaurants } from './get-restaurants'
+import { updateRestaurant } from './update-restaurant'
 
 export async function Routes(app: FastifyInstance) {
   // Colaborators
@@ -14,4 +17,9 @@ export async function Routes(app: FastifyInstance) {
 
   // Users
   app.register(registerUsers)
+
+  // Restaurants
+  app.register(getRestaurant)
+  app.register(getRestaurants)
+  app.register(updateRestaurant)
 }
