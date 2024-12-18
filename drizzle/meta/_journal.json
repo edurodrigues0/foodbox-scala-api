@@ -15,6 +15,13 @@
       "when": 1734553109247,
       "tag": "0001_fresh_the_fallen",
       "breakpoints": true
+    },
+    {
+      "idx": 2,
+      "version": "7",
+      "when": 1734554711559,
+      "tag": "0002_thin_night_thrasher",
+      "breakpoints": true
     }
   ]
 }
