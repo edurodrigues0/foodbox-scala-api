@@ -1,6 +1,7 @@
 import fastify from 'fastify'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUI from '@fastify/swagger-ui'
+import fastifyWebsocket from '@fastify/websocket'
 
 import { ZodError } from 'zod'
 import {
@@ -34,6 +35,8 @@ app.register(fastifySwaggerUI, {
 
 app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
+
+app.register(fastifyWebsocket)
 
 app.register(Routes)
 
