@@ -4,6 +4,7 @@ import { z } from 'zod'
 import { db } from '../../database/connection'
 import { userRoleEnum, users } from '../../database/schema'
 import { hash } from 'bcrypt'
+import { restaurants } from '../../database/schema/restaurants'
 
 export async function registerUsers(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -17,6 +18,7 @@ export async function registerUsers(app: FastifyInstance) {
           email: z.string().email(),
           password: z.string(),
           role: z.enum([...userRoleEnum.enumValues]).optional(),
+          restaurantName: z.string().optional(),
         }),
         response: {
           201: z.object({
@@ -29,7 +31,7 @@ export async function registerUsers(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { name, email, password, role } = request.body
+      const { name, email, password, role, restaurantName } = request.body
 
       const userWithSameEmail = await db.query.users.findFirst({
         where(fields, { eq }) {
@@ -41,19 +43,27 @@ export async function registerUsers(app: FastifyInstance) {
         return reply.status(409).send({ message: 'User already exists.' })
       }
 
-      const hashPassoword = await hash(password, 6)
+      const hashPassword = await hash(password, 6)
 
       const [user] = await db
         .insert(users)
         .values({
           name,
           email,
-          password: hashPassoword,
+          password: hashPassword,
           role: role ?? 'supervisor',
         })
         .returning({
+          id: users.id,
           email: users.email,
         })
+
+      if (role === 'restaurant' && restaurantName) {
+        await db.insert(restaurants).values({
+          name: restaurantName,
+          managerId: user.id,
+        })
+      }
 
       return reply.status(201).send({
         email: user.email,

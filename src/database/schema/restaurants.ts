@@ -3,7 +3,7 @@ import { pgTable, text, timestamp } from 'drizzle-orm/pg-core'
 import { users } from './users'
 import { relations } from 'drizzle-orm'
 
-export const restaurants = pgTable('users', {
+export const restaurants = pgTable('restaurants', {
   id: text('id')
     .$defaultFn(() => createId())
     .primaryKey(),

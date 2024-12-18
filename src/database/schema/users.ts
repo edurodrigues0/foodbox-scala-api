@@ -3,7 +3,7 @@ import { relations } from 'drizzle-orm'
 import { pgEnum, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { restaurants } from './restaurants'
 
-export const userRoleEnum = pgEnum('user_role', [
+export const userRoleEnum = pgEnum('role', [
   'admin',
   'rh',
   'supervisor',
