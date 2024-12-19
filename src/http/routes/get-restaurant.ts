@@ -4,6 +4,7 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
+import { ResourceNotFoundError } from '../../errors/resource-not-found'
 
 export async function getRestaurant(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -35,33 +36,39 @@ export async function getRestaurant(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { restaurantId } = request.params
+      try {
+        const { restaurantId } = request.params
 
-      const restaurant = await db.query.restaurants.findFirst({
-        columns: {
-          id: true,
-          name: true,
-        },
-        with: {
-          manager: {
-            columns: {
-              name: true,
-              email: true,
+        const restaurant = await db.query.restaurants.findFirst({
+          columns: {
+            id: true,
+            name: true,
+          },
+          with: {
+            manager: {
+              columns: {
+                name: true,
+                email: true,
+              },
             },
           },
-        },
-        where(fields, { eq }) {
-          return eq(fields.id, restaurantId)
-        },
-      })
+          where(fields, { eq }) {
+            return eq(fields.id, restaurantId)
+          },
+        })
 
-      if (!restaurant) {
-        return reply
-          .status(404)
-          .send({ message: 'Restaurante não encontrado.' })
+        if (!restaurant) {
+          throw new ResourceNotFoundError()
+        }
+
+        return reply.status(200).send({ restaurant })
+      } catch (error) {
+        if (error instanceof ResourceNotFoundError) {
+          return reply.status(404).send({ message: error.message })
+        }
+
+        throw error
       }
-
-      return reply.status(200).send({ restaurant })
     },
   )
 }

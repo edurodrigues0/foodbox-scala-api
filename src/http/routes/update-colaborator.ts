@@ -8,6 +8,7 @@ import { eq } from 'drizzle-orm'
 import { colaborators } from '../../database/schema'
 import { hmacCPF as hmacCPFFn } from '../../utils/hmac-cpf'
 import { encryptCPF } from '../../utils/encrypt-cpf'
+import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 
 export async function updateColaborator(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().put(
@@ -32,33 +33,39 @@ export async function updateColaborator(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { name, cpf } = request.body
-      const { colaboratorId } = request.params
+      try {
+        const { name, cpf } = request.body
+        const { colaboratorId } = request.params
 
-      if (cpf) {
-        const hmacCPF = hmacCPFFn(cpf)
+        if (cpf) {
+          const hmacCPF = hmacCPFFn(cpf)
 
-        const colaboratorWithSameCPF = await db.query.colaborators.findFirst({
-          where(fields, { eq }) {
-            return eq(fields.hmac_cpf, hmacCPF)
-          },
-        })
+          const colaboratorWithSameCPF = await db.query.colaborators.findFirst({
+            where(fields, { eq }) {
+              return eq(fields.hmac_cpf, hmacCPF)
+            },
+          })
 
-        if (colaboratorWithSameCPF?.id !== colaboratorId) {
-          return reply.status(409).send({ message: 'Conflict data.' })
+          if (colaboratorWithSameCPF?.id !== colaboratorId) {
+            throw new DataAlreadyExistsError()
+          }
+        }
+
+        await db
+          .update(colaborators)
+          .set({
+            name,
+            cpf: cpf ? encryptCPF(cpf) : undefined,
+            hmac_cpf: cpf ? hmacCPFFn(cpf) : undefined,
+          })
+          .where(eq(colaborators.id, colaboratorId))
+
+        return reply.status(204).send()
+      } catch (error) {
+        if (error instanceof DataAlreadyExistsError) {
+          return reply.status(409).send({ message: error.message })
         }
       }
-
-      await db
-        .update(colaborators)
-        .set({
-          name,
-          cpf: cpf ? encryptCPF(cpf) : undefined,
-          hmac_cpf: cpf ? hmacCPFFn(cpf) : undefined,
-        })
-        .where(eq(colaborators.id, colaboratorId))
-
-      return reply.status(204).send()
     },
   )
 }

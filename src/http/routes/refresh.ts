@@ -2,6 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { undefined, z } from 'zod'
 import { db } from '../../database/connection'
+import { UnauthorizedError } from '../../errors/unauthorized'
 
 export async function refresh(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -23,62 +24,75 @@ export async function refresh(app: FastifyInstance) {
               role: z.string(),
             }),
           }),
+          401: z.object({
+            message: z.string(),
+          }),
         },
       },
     },
     async (request, reply) => {
-      await request.jwtVerify({ onlyCookie: true })
+      try {
+        await request.jwtVerify({ onlyCookie: true })
 
-      const { role, sub } = request.user
+        const { role, sub } = request.user
 
-      const user = await db.query.users.findFirst({
-        where(fields, { eq }) {
-          return eq(fields.id, sub)
-        },
-      })
+        const user = await db.query.users.findFirst({
+          where(fields, { eq }) {
+            return eq(fields.id, sub)
+          },
+        })
 
-      if (!user) {
-        throw new Error()
+        if (!user) {
+          throw new UnauthorizedError()
+        }
+
+        const token = await reply.jwtSign(
+          {
+            role,
+          },
+          {
+            sign: {
+              sub: request.user.sub,
+            },
+          },
+        )
+
+        const refreshToken = await reply.jwtSign(
+          { role },
+          {
+            sign: {
+              sub,
+              expiresIn: '3d',
+            },
+          },
+        )
+
+        return reply
+          .setCookie('refreshToken', refreshToken, {
+            path: '/',
+            secure: true,
+            httpOnly: true,
+          })
+          .status(200)
+          .send({
+            auth_metadata: {
+              token,
+              refresh_token: refreshToken,
+            },
+            user: {
+              ...user,
+              password: undefined,
+            },
+          })
+      } catch (error) {
+        if (error instanceof UnauthorizedError) {
+          return reply.status(401).send({
+            message: error.message,
+          })
+
+          throw error
+        }
       }
-
-      const token = await reply.jwtSign(
-        {
-          role,
-        },
-        {
-          sign: {
-            sub: request.user.sub,
-          },
-        },
-      )
-
-      const refreshToken = await reply.jwtSign(
-        { role },
-        {
-          sign: {
-            sub,
-            expiresIn: '3d',
-          },
-        },
-      )
-
-      return reply
-        .setCookie('refreshToken', refreshToken, {
-          path: '/',
-          secure: true,
-          httpOnly: true,
-        })
-        .status(200)
-        .send({
-          auth_metadata: {
-            token,
-            refresh_token: refreshToken,
-          },
-          user: {
-            ...user,
-            password: undefined,
-          },
-        })
     },
   )
 }

@@ -6,6 +6,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
 import { restaurants } from '../../database/schema'
+import { ResourceNotFoundError } from '../../errors/resource-not-found'
 
 export async function updateRestaurant(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().put(
@@ -22,24 +23,42 @@ export async function updateRestaurant(app: FastifyInstance) {
         }),
         response: {
           204: z.null(),
-          409: z.object({
+          404: z.object({
             message: z.string(),
           }),
         },
       },
     },
     async (request, reply) => {
-      const { name } = request.body
-      const { restaurantId } = request.params
+      try {
+        const { name } = request.body
+        const { restaurantId } = request.params
 
-      await db
-        .update(restaurants)
-        .set({
-          name,
+        const restaurant = db.query.restaurants.findFirst({
+          where(fields, { eq }) {
+            return eq(fields.id, restaurantId)
+          },
         })
-        .where(eq(restaurants.id, restaurantId))
 
-      return reply.status(204).send()
+        if (!restaurant) {
+          throw new ResourceNotFoundError()
+        }
+
+        await db
+          .update(restaurants)
+          .set({
+            name,
+          })
+          .where(eq(restaurants.id, restaurantId))
+
+        return reply.status(204).send()
+      } catch (error) {
+        if (error instanceof ResourceNotFoundError) {
+          return reply.status(404).send({
+            message: error.message,
+          })
+        }
+      }
     },
   )
 }

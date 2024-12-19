@@ -4,6 +4,7 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
+import { ResourceNotFoundError } from '../../errors/resource-not-found'
 
 export async function getColaborator(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -29,25 +30,31 @@ export async function getColaborator(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { colaboratorId } = request.params
+      try {
+        const { colaboratorId } = request.params
 
-      const colaborator = await db.query.colaborators.findFirst({
-        columns: {
-          id: true,
-          name: true,
-        },
-        where(fields, { eq }) {
-          return eq(fields.id, colaboratorId)
-        },
-      })
+        const colaborator = await db.query.colaborators.findFirst({
+          columns: {
+            id: true,
+            name: true,
+          },
+          where(fields, { eq }) {
+            return eq(fields.id, colaboratorId)
+          },
+        })
 
-      if (!colaborator) {
-        return reply
-          .status(404)
-          .send({ message: 'Colaborador não encontrado.' })
+        if (!colaborator) {
+          throw new ResourceNotFoundError()
+        }
+
+        return reply.status(200).send({ colaborator })
+      } catch (error) {
+        if (error instanceof ResourceNotFoundError) {
+          return reply.status(404).send({ message: error.message })
+        }
+
+        throw error
       }
-
-      return reply.status(200).send({ colaborator })
     },
   )
 }

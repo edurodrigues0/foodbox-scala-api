@@ -3,6 +3,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { undefined, z } from 'zod'
 import { db } from '../../database/connection'
 import { compare } from 'bcrypt'
+import { InvalidCredentialsError } from '../../errors/invalid-credentials'
 
 export async function authenticate(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -28,77 +29,90 @@ export async function authenticate(app: FastifyInstance) {
               role: z.string(),
             }),
           }),
+          400: z.object({
+            message: z.string(),
+          }),
         },
       },
     },
     async (request, reply) => {
       const { email, password } = request.body
 
-      const user = await db.query.users.findFirst({
-        columns: {
-          id: true,
-          email: true,
-          name: true,
-          role: true,
-          password: true,
-        },
-        where(fields, { eq }) {
-          return eq(fields.email, email)
-        },
-      })
-
-      if (!user) {
-        throw new Error() // TODO
-      }
-
-      const doesPasswordMatches = await compare(password, user.password)
-
-      if (!doesPasswordMatches) {
-        throw new Error()
-      }
-
-      const token = await reply.jwtSign(
-        {
-          role: user.role,
-        },
-        {
-          sign: {
-            sub: user.id,
-            expiresIn: '1d',
+      try {
+        const user = await db.query.users.findFirst({
+          columns: {
+            id: true,
+            email: true,
+            name: true,
+            role: true,
+            password: true,
           },
-        },
-      )
-
-      const refreshToken = await reply.jwtSign(
-        {
-          role: user.role,
-        },
-        {
-          sign: {
-            sub: user.id,
-            expiresIn: '7d',
-          },
-        },
-      )
-
-      return reply
-        .setCookie('refreshToken', refreshToken, {
-          path: '/',
-          secure: true,
-          httpOnly: true,
-        })
-        .header('access-control-allow-credentials', 'true')
-        .status(200)
-        .send({
-          auth_metadata: {
-            token,
-            refresh_token: refreshToken,
-          },
-          user: {
-            ...user,
-            password: undefined,
+          where(fields, { eq }) {
+            return eq(fields.email, email)
           },
         })
+
+        if (!user) {
+          throw new InvalidCredentialsError()
+        }
+
+        const doesPasswordMatches = await compare(password, user.password)
+
+        if (!doesPasswordMatches) {
+          throw new InvalidCredentialsError()
+        }
+
+        const token = await reply.jwtSign(
+          {
+            role: user.role,
+          },
+          {
+            sign: {
+              sub: user.id,
+              expiresIn: '1d',
+            },
+          },
+        )
+
+        const refreshToken = await reply.jwtSign(
+          {
+            role: user.role,
+          },
+          {
+            sign: {
+              sub: user.id,
+              expiresIn: '7d',
+            },
+          },
+        )
+
+        return reply
+          .setCookie('refreshToken', refreshToken, {
+            path: '/',
+            secure: true,
+            httpOnly: true,
+          })
+          .header('access-control-allow-credentials', 'true')
+          .status(200)
+          .send({
+            auth_metadata: {
+              token,
+              refresh_token: refreshToken,
+            },
+            user: {
+              ...user,
+              password: undefined,
+            },
+          })
+      } catch (error) {
+        if (error instanceof InvalidCredentialsError) {
+          return reply.status(400).send({
+            message: error.message,
+          })
+        }
+
+        throw error
+      }
     },
   )
 }

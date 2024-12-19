@@ -7,6 +7,7 @@ import { db } from '../../database/connection'
 import { colaborators } from '../../database/schema'
 import { hmacCPF as hmacCPFFn } from '../../utils/hmac-cpf'
 import { encryptCPF } from '../../utils/encrypt-cpf'
+import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 
 export async function createColaborator(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -21,47 +22,51 @@ export async function createColaborator(app: FastifyInstance) {
           cpf: z.string(),
         }),
         response: {
-          201: z
-            .object({
-              colaborator_name: z.string(),
-            })
-            .describe('Success status'),
-          404: z
-            .object({
-              message: z.string(),
-            })
-            .describe('Error, conflict data'),
+          201: z.object({
+            colaborator_name: z.string(),
+          }),
+          409: z.object({
+            message: z.string(),
+          }),
         },
       },
     },
     async (request, reply) => {
-      const { name, cpf } = request.body
+      try {
+        const { name, cpf } = request.body
 
-      const hmacCPF = hmacCPFFn(cpf)
-      const hashedCPF = encryptCPF(cpf)
+        const hmacCPF = hmacCPFFn(cpf)
+        const hashedCPF = encryptCPF(cpf)
 
-      const colaboratorAlreadyExist = await db.query.colaborators.findFirst({
-        where(fields, { eq }) {
-          return eq(fields.hmac_cpf, hmacCPF)
-        },
-      })
+        const colaboratorAlreadyExist = await db.query.colaborators.findFirst({
+          where(fields, { eq }) {
+            return eq(fields.hmac_cpf, hmacCPF)
+          },
+        })
 
-      if (colaboratorAlreadyExist) {
-        return reply.status(404).send({ message: 'Colaborador já existe.' })
+        if (colaboratorAlreadyExist) {
+          throw new DataAlreadyExistsError()
+        }
+
+        const [colaborator] = await db
+          .insert(colaborators)
+          .values({
+            name,
+            cpf: hashedCPF,
+            hmac_cpf: hmacCPF,
+          })
+          .returning({
+            name: colaborators.name,
+          })
+
+        return reply.status(201).send({ colaborator_name: colaborator.name })
+      } catch (error) {
+        if (error instanceof DataAlreadyExistsError) {
+          return reply.status(409).send({ message: error.message })
+        }
+
+        throw error
       }
-
-      const [colaborator] = await db
-        .insert(colaborators)
-        .values({
-          name,
-          cpf: hashedCPF,
-          hmac_cpf: hmacCPF,
-        })
-        .returning({
-          name: colaborators.name,
-        })
-
-      return reply.status(201).send({ colaborator_name: colaborator.name })
     },
   )
 }
