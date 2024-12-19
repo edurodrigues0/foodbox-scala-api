@@ -26,7 +26,7 @@ const createUser = async () => {
     .values([
       {
         name: faker.person.fullName(),
-        email: faker.internet.email(),
+        email: 'admin@admin.com',
         password: hashPassword,
         role: 'admin',
       },

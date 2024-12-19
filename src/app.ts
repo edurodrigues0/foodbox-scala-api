@@ -1,4 +1,6 @@
 import fastify from 'fastify'
+
+import fastifyJwt from '@fastify/jwt'
 import fastifySwagger from '@fastify/swagger'
 import fastifySwaggerUI from '@fastify/swagger-ui'
 import fastifyWebsocket from '@fastify/websocket'
@@ -12,6 +14,7 @@ import {
 
 import { env } from './env'
 import { Routes } from './http/routes/_routes'
+import fastifyCookie from '@fastify/cookie'
 
 export const app = fastify()
 
@@ -37,6 +40,19 @@ app.setValidatorCompiler(validatorCompiler)
 app.setSerializerCompiler(serializerCompiler)
 
 app.register(fastifyWebsocket)
+
+app.register(fastifyCookie)
+
+app.register(fastifyJwt, {
+  secret: env.JWT_SECRET,
+  cookie: {
+    cookieName: 'refreshToken',
+    signed: false,
+  },
+  sign: {
+    expiresIn: '1d',
+  },
+})
 
 app.register(Routes)
 

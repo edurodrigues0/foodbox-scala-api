@@ -7,8 +7,14 @@ import { registerUsers } from './register-user'
 import { getRestaurant } from './get-restaurant'
 import { getRestaurants } from './get-restaurants'
 import { updateRestaurant } from './update-restaurant'
+import { authenticate } from './authenticate'
+import { refresh } from './refresh'
 
 export async function Routes(app: FastifyInstance) {
+  // Auth
+  app.register(authenticate)
+  app.register(refresh)
+
   // Colaborators
   app.register(createColaborator)
   app.register(getColaborator)
