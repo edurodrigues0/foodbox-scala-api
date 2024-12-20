@@ -3,7 +3,14 @@ import chalk from 'chalk'
 import { faker } from '@faker-js/faker'
 
 import { db } from './connection'
-import { colaborators, menus, orders, restaurants, users } from './schema'
+import {
+  colaborators,
+  menus,
+  orders,
+  restaurants,
+  unitys,
+  users,
+} from './schema'
 import { hash } from 'bcrypt'
 import { encryptCPF } from '../utils/encrypt-cpf'
 import { hmacCPF } from '../utils/hmac-cpf'
@@ -94,9 +101,24 @@ const createMenu = async (restaurantId: string) => {
 }
 
 /**
+ * Create unitys
+ */
+const createUnity = async () => {
+  const [unity] = await db
+    .insert(unitys)
+    .values({
+      name: 'Scala II',
+      unity: 2,
+    })
+    .returning()
+
+  return { unity }
+}
+
+/**
  * Create colaborator
  */
-const createColaborator = async () => {
+const createColaborator = async (unityId: string) => {
   const cpf = '146.113.760-87'
   const encryptedCPF = encryptCPF(cpf)
   const hashedHmacCPF = hmacCPF(cpf)
@@ -107,6 +129,7 @@ const createColaborator = async () => {
       name: faker.person.fullName(),
       cpf: encryptedCPF,
       hmac_cpf: hashedHmacCPF,
+      unityId,
     })
     .returning()
 
@@ -145,7 +168,10 @@ async function main() {
   const { menu1 } = await createMenu(restaurant.id)
   console.log(chalk.greenBright('✔️ Created menu!'))
 
-  const { colaborator } = await createColaborator()
+  const { unity } = await createUnity()
+  console.log(chalk.greenBright('✔️ Created unity!'))
+
+  const { colaborator } = await createColaborator(unity.id)
   console.log(chalk.greenBright('✔️ Created colaborator!'))
 
   await createOrders(colaborator.id, menu1.id)

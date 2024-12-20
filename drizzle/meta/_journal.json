@@ -5,22 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1734557069070,
-      "tag": "0000_outstanding_norrin_radd",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1734646813301,
-      "tag": "0001_loud_captain_universe",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1734648362100,
-      "tag": "0002_high_ink",
+      "when": 1734729567633,
+      "tag": "0000_handy_killmonger",
       "breakpoints": true
     }
   ]
