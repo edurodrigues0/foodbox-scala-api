@@ -9,6 +9,11 @@ import { getRestaurants } from './get-restaurants'
 import { updateRestaurant } from './update-restaurant'
 import { authenticate } from './authenticate'
 import { refresh } from './refresh'
+import { createMenu } from './create-menu'
+import { getMenus } from './get-menus'
+import { getMenu } from './get-menu'
+import { updateMenu } from './update-menu'
+import { deleteMenu } from './delete-menu'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -28,4 +33,11 @@ export async function Routes(app: FastifyInstance) {
   app.register(getRestaurant)
   app.register(getRestaurants)
   app.register(updateRestaurant)
+
+  // Menus
+  app.register(createMenu)
+  app.register(getMenu)
+  app.register(getMenus)
+  app.register(updateMenu)
+  app.register(deleteMenu)
 }
