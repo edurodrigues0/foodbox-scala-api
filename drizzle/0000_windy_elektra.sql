@@ -1,10 +1,11 @@
+CREATE TYPE "public"."role" AS ENUM('admin', 'rh', 'supervisor', 'restaurant');--> statement-breakpoint
 CREATE TABLE "colaborators" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" varchar(100) NOT NULL,
 	"registration" serial NOT NULL,
 	"cpf" text NOT NULL,
 	"hmac_cpf" text NOT NULL,
-	"unity_id" text DEFAULT '1',
+	"sector_id" text DEFAULT '1',
 	"created_at" timestamp DEFAULT now() NOT NULL,
 	"updated_at" timestamp DEFAULT now() NOT NULL,
 	CONSTRAINT "colaborators_registration_unique" UNIQUE("registration"),
@@ -57,8 +58,16 @@ CREATE TABLE "unitys" (
 	CONSTRAINT "unitys_unity_unique" UNIQUE("unity")
 );
 --> statement-breakpoint
-ALTER TABLE "colaborators" ADD CONSTRAINT "colaborators_unity_id_unitys_id_fk" FOREIGN KEY ("unity_id") REFERENCES "public"."unitys"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+CREATE TABLE "sectors" (
+	"id" text PRIMARY KEY NOT NULL,
+	"name" varchar(24) NOT NULL,
+	"unity_id" text,
+	"created_at" timestamp DEFAULT now() NOT NULL
+);
+--> statement-breakpoint
+ALTER TABLE "colaborators" ADD CONSTRAINT "colaborators_sector_id_sectors_id_fk" FOREIGN KEY ("sector_id") REFERENCES "public"."sectors"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "restaurants" ADD CONSTRAINT "restaurants_manager_id_users_id_fk" FOREIGN KEY ("manager_id") REFERENCES "public"."users"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "menus" ADD CONSTRAINT "menus_restaurant_id_restaurants_id_fk" FOREIGN KEY ("restaurant_id") REFERENCES "public"."restaurants"("id") ON DELETE cascade ON UPDATE no action;--> statement-breakpoint
 ALTER TABLE "orders" ADD CONSTRAINT "orders_colaborator_id_colaborators_id_fk" FOREIGN KEY ("colaborator_id") REFERENCES "public"."colaborators"("id") ON DELETE set null ON UPDATE no action;--> statement-breakpoint
-ALTER TABLE "orders" ADD CONSTRAINT "orders_menu_id_menus_id_fk" FOREIGN KEY ("menu_id") REFERENCES "public"."menus"("id") ON DELETE no action ON UPDATE no action;
+ALTER TABLE "orders" ADD CONSTRAINT "orders_menu_id_menus_id_fk" FOREIGN KEY ("menu_id") REFERENCES "public"."menus"("id") ON DELETE no action ON UPDATE no action;--> statement-breakpoint
+ALTER TABLE "sectors" ADD CONSTRAINT "sectors_unity_id_unitys_id_fk" FOREIGN KEY ("unity_id") REFERENCES "public"."unitys"("id") ON DELETE cascade ON UPDATE no action;

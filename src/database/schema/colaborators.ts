@@ -1,7 +1,7 @@
 import { pgTable, text, varchar, timestamp, serial } from 'drizzle-orm/pg-core'
 import { createId } from '@paralleldrive/cuid2'
-import { unitys } from './unitys'
 import { relations } from 'drizzle-orm'
+import { sectors } from './sectors'
 
 export const colaborators = pgTable('colaborators', {
   id: text('id')
@@ -11,8 +11,8 @@ export const colaborators = pgTable('colaborators', {
   registration: serial('registration').notNull().unique(),
   cpf: text('cpf').notNull().unique(),
   hmac_cpf: text('hmac_cpf').notNull().unique(),
-  unityId: text('unity_id')
-    .references(() => unitys.id)
+  sectorId: text('sector_id')
+    .references(() => sectors.id)
     .default('1'),
   createdAt: timestamp('created_at').notNull().defaultNow(),
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
@@ -20,10 +20,10 @@ export const colaborators = pgTable('colaborators', {
 
 export const colaboratorsRelations = relations(colaborators, ({ one }) => {
   return {
-    unity: one(unitys, {
-      fields: [colaborators.unityId],
-      references: [unitys.id],
-      relationName: 'colaborator_unity',
+    unity: one(sectors, {
+      fields: [colaborators.sectorId],
+      references: [sectors.id],
+      relationName: 'colaborator_sector',
     }),
   }
 })

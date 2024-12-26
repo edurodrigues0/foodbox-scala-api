@@ -49,7 +49,7 @@ export async function deleteMenu(app: FastifyInstance) {
           true,
         )
 
-        if (deleteLimitTime < -1) {
+        if (deleteLimitTime >= 2) {
           await db.delete(menus).where(eq(menus.id, menuId))
         } else {
           throw new UnauthorizedError()

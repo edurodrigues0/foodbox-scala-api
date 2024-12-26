@@ -8,6 +8,7 @@ import {
   menus,
   orders,
   restaurants,
+  sectors,
   unitys,
   users,
 } from './schema'
@@ -115,10 +116,24 @@ const createUnity = async () => {
   return { unity }
 }
 
+const createSector = async (unityId: string) => {
+  const [sector] = await db
+    .insert(sectors)
+    .values({
+      name: faker.commerce.department(),
+      unityId,
+    })
+    .returning()
+
+    return {
+      sector
+    }
+}
+
 /**
  * Create colaborator
  */
-const createColaborator = async (unityId: string) => {
+const createColaborator = async (sectorId: string) => {
   const cpf = '146.113.760-87'
   const encryptedCPF = encryptCPF(cpf)
   const hashedHmacCPF = hmacCPF(cpf)
@@ -129,7 +144,7 @@ const createColaborator = async (unityId: string) => {
       name: faker.person.fullName(),
       cpf: encryptedCPF,
       hmac_cpf: hashedHmacCPF,
-      unityId,
+      sectorId,
     })
     .returning()
 
@@ -171,7 +186,10 @@ async function main() {
   const { unity } = await createUnity()
   console.log(chalk.greenBright('✔️ Created unity!'))
 
-  const { colaborator } = await createColaborator(unity.id)
+  const { sector } = await createSector(unity.id)
+  console.log(chalk.greenBright('✔️ Created sector!'))
+
+  const { colaborator } = await createColaborator(sector.id)
   console.log(chalk.greenBright('✔️ Created colaborator!'))
 
   await createOrders(colaborator.id, menu1.id)
