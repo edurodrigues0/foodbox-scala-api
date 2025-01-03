@@ -6,9 +6,7 @@ import { ResourceNotFoundError } from '../../errors/resource-not-found'
 import { z } from 'zod'
 import { restaurantConnections } from '../../utils/connection-manager'
 
-export async function createOrders(
-  app: FastifyInstance,
-) {
+export async function createOrders(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
     '/orders',
     {
@@ -45,7 +43,6 @@ export async function createOrders(
           },
         })
 
-
         if (!colaborator) {
           throw new ResourceNotFoundError()
         }
@@ -63,7 +60,7 @@ export async function createOrders(
         if (restaurantConnections.has(restaurantId)) {
           const connections = restaurantConnections.get(restaurantId)
           connections?.forEach((connection) => {
-            connection.send(JSON.stringify({type: 'new-order', data: order}))
+            connection.send(JSON.stringify({ type: 'new-order', data: order }))
           })
         }
 

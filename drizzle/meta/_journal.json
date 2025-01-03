@@ -8,6 +8,13 @@
       "when": 1735252105883,
       "tag": "0000_windy_elektra",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1735849894086,
+      "tag": "0001_square_nova",
+      "breakpoints": true
     }
   ]
 }

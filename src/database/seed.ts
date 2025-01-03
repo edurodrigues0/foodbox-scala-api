@@ -1,5 +1,3 @@
-import chalk from 'chalk'
-
 import { faker } from '@faker-js/faker'
 
 import { db } from './connection'
@@ -20,9 +18,13 @@ import { hmacCPF } from '../utils/hmac-cpf'
  * Delete database
  */
 async function deleteAllDatabase() {
-  await db.delete(users)
-  await db.delete(restaurants)
-  await db.delete(colaborators)
+  await db.delete(orders);
+  await db.delete(colaborators);
+  await db.delete(menus);
+  await db.delete(restaurants);
+  await db.delete(sectors);
+  await db.delete(unitys);
+  await db.delete(users);
 }
 
 /**
@@ -58,13 +60,14 @@ const createUser = async () => {
 /**
  * Create Restaurant
  */
-const createRestaurant = async (managerId: string) => {
+const createRestaurant = async (managerId: string, unitId: string) => {
   const [restaurant] = await db
     .insert(restaurants)
     .values([
       {
         name: faker.company.name(),
         managerId,
+        unitId,
       },
     ])
     .returning()
@@ -172,30 +175,22 @@ const createOrders = async (colaboratorId: string, menuId: string) => {
 
 async function main() {
   await deleteAllDatabase()
-  console.log(chalk.greenBright('✔️ Database reset!'))
-
-  const { user2 } = await createUser()
-  console.log(chalk.greenBright('✔️ Created users!'))
-
-  const { restaurant } = await createRestaurant(user2.id)
-  console.log(chalk.greenBright('✔️ Created restaurant!'))
-
-  const { menu1 } = await createMenu(restaurant.id)
-  console.log(chalk.greenBright('✔️ Created menu!'))
 
   const { unity } = await createUnity()
-  console.log(chalk.greenBright('✔️ Created unity!'))
 
   const { sector } = await createSector(unity.id)
-  console.log(chalk.greenBright('✔️ Created sector!'))
+
+  const { user2 } = await createUser()
+
+  const { restaurant } = await createRestaurant(user2.id, unity.id)
+
+  const { menu1 } = await createMenu(restaurant.id)
 
   const { colaborator } = await createColaborator(sector.id)
-  console.log(chalk.greenBright('✔️ Created colaborator!'))
 
   await createOrders(colaborator.id, menu1.id)
-  console.log(chalk.greenBright('✔️ Created orders!'))
 }
 
-main().finally(() => {
+main().then().finally(() => {
   process.exit(1)
 })

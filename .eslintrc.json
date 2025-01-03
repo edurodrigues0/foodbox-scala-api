@@ -5,6 +5,6 @@
   "rules": {
     "camelcase": "off",
     "no-useless-constructor": "off",
-    "no-explicit-any": "off",
+    "no-explicit-any": "off"
   }
 }

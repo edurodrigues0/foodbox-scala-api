@@ -16,6 +16,8 @@ import { updateMenu } from './update-menu'
 import { deleteMenu } from './delete-menu'
 import { createOrders } from './create-orders'
 import { restaurantConnection } from './restaurant-connection'
+import { getMenuTodayAndTomorrow } from './get-menus-today-and-tomorrow'
+import { getColaboratorsOrderSummary } from './get-colaborators-orders-summary'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -27,6 +29,8 @@ export async function Routes(app: FastifyInstance) {
   app.register(getColaborator)
   app.register(getColaborators)
   app.register(updateColaborator)
+
+  app.register(getColaboratorsOrderSummary)
 
   // Users
   app.register(registerUsers)
@@ -42,6 +46,7 @@ export async function Routes(app: FastifyInstance) {
   app.register(getMenus)
   app.register(updateMenu)
   app.register(deleteMenu)
+  app.register(getMenuTodayAndTomorrow)
 
   // Orders
   app.register(createOrders)
