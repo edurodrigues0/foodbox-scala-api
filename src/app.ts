@@ -15,8 +15,14 @@ import {
 import { env } from './env'
 import { Routes } from './http/routes/_routes'
 import fastifyCookie from '@fastify/cookie'
+import cors from '@fastify/cors'
 
 export const app = fastify()
+
+app.register(cors, {
+  origin: true,
+  credentials: true,
+})
 
 app.register(fastifySwagger, {
   swagger: {
