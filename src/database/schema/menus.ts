@@ -9,7 +9,7 @@ export const menus = pgTable('menus', {
     .primaryKey(),
   name: varchar('name', { length: 40 }).notNull(),
   serviceDate: timestamp('service_date').notNull(),
-  description: text().notNull(),
+  description: text().array().notNull(),
   restaurantId: text('restaurant_id')
     .notNull()
     .references(() => restaurants.id, {

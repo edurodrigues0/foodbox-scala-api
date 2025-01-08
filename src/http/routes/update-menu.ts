@@ -21,7 +21,7 @@ export async function updateMenu(app: FastifyInstance) {
         }),
         body: z.object({
           name: z.string().optional(),
-          description: z.string().optional(),
+          description: z.array(z.string()).optional(),
           allergens: z.string().optional(),
           serviceDate: z.string().optional(),
         }),

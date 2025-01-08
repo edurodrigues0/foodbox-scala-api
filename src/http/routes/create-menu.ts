@@ -20,7 +20,7 @@ export async function createMenu(app: FastifyInstance) {
         body: z.object({
           name: z.string(),
           serviceDate: z.string(),
-          description: z.string(),
+          description: z.array(z.string()),
           allergens: z.string().optional(),
         }),
         response: {

@@ -25,7 +25,8 @@ export async function getMenuTodayAndTomorrow(app: FastifyInstance) {
               z.object({
                 menu_id: z.string(),
                 menu_name: z.string(),
-                menu_description: z.string(),
+                menu_description: z.array(z.string()),
+                menu_allergens: z.string().nullable(),
                 service_date: z.date(),
               }),
             ),
@@ -41,7 +42,7 @@ export async function getMenuTodayAndTomorrow(app: FastifyInstance) {
         const { unitId } = request.params
 
         const startDate = dayjs().startOf('day')
-        const endTomorrowDate = dayjs().add(1, 'day').endOf('day')
+        const endTomorrowDate = dayjs().add(0, 'day').endOf('day')
 
         const menusTodayAndTomorrow = await db
           .select({
@@ -49,14 +50,16 @@ export async function getMenuTodayAndTomorrow(app: FastifyInstance) {
             menu_name: menus.name,
             menu_description: menus.description,
             service_date: menus.serviceDate,
+            menu_allergens: menus.allergens,
           })
           .from(menus)
-          .innerJoin(restaurants, eq(restaurants.id, menus.restaurantId))
-          .innerJoin(unitys, eq(restaurants.unitId, unitId))
+          .innerJoin(unitys, eq(unitys.id, unitId))
+          .innerJoin(restaurants, eq(restaurants.id, unitys.restaurantId))
           .where(
             and(
               gte(menus.serviceDate, startDate.toDate()),
               lte(menus.serviceDate, endTomorrowDate.toDate()),
+              eq(menus.restaurantId, unitys.restaurantId),
             ),
           )
 

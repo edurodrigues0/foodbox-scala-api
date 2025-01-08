@@ -13,18 +13,19 @@ import {
 import { hash } from 'bcrypt'
 import { encryptCPF } from '../utils/encrypt-cpf'
 import { hmacCPF } from '../utils/hmac-cpf'
+import { eq } from 'drizzle-orm'
 
 /**
  * Delete database
  */
 async function deleteAllDatabase() {
-  await db.delete(orders);
-  await db.delete(colaborators);
-  await db.delete(menus);
-  await db.delete(restaurants);
-  await db.delete(sectors);
-  await db.delete(unitys);
-  await db.delete(users);
+  await db.delete(orders)
+  await db.delete(colaborators)
+  await db.delete(menus)
+  await db.delete(restaurants)
+  await db.delete(sectors)
+  await db.delete(unitys)
+  await db.delete(users)
 }
 
 /**
@@ -67,10 +68,16 @@ const createRestaurant = async (managerId: string, unitId: string) => {
       {
         name: faker.company.name(),
         managerId,
-        unitId,
       },
     ])
     .returning()
+
+  await db
+    .update(unitys)
+    .set({
+      restaurantId: restaurant.id,
+    })
+    .where(eq(unitys.id, unitId))
 
   return {
     restaurant,
@@ -86,13 +93,21 @@ const createMenu = async (restaurantId: string) => {
     .values([
       {
         name: faker.commerce.productName(),
-        description: faker.commerce.productDescription(),
+        description: [
+          faker.commerce.productName(),
+          faker.commerce.productName(),
+          faker.commerce.productName(),
+          faker.commerce.productName(),
+        ],
         restaurantId,
         serviceDate: faker.date.recent({ days: 1 }),
       },
       {
         name: faker.commerce.productName(),
-        description: faker.commerce.productDescription(),
+        description: [
+          faker.commerce.productName(),
+          faker.commerce.productName(),
+        ],
         restaurantId,
         serviceDate: faker.date.recent({ days: 1 }),
       },
@@ -128,9 +143,9 @@ const createSector = async (unityId: string) => {
     })
     .returning()
 
-    return {
-      sector
-    }
+  return {
+    sector,
+  }
 }
 
 /**
@@ -191,6 +206,8 @@ async function main() {
   await createOrders(colaborator.id, menu1.id)
 }
 
-main().then().finally(() => {
-  process.exit(1)
-})
+main()
+  .then((err) => console.log(err))
+  .finally(() => {
+    process.exit(1)
+  })

@@ -1,5 +1,5 @@
 {
-  "id": "11dd36cc-8576-48e7-9eb9-5fb2b17c8aea",
+  "id": "9ca566ed-93f3-4d31-927e-43f11137b8f5",
   "prevId": "00000000-0000-0000-0000-000000000000",
   "version": "7",
   "dialect": "postgresql",
@@ -254,7 +254,7 @@
         },
         "description": {
           "name": "description",
-          "type": "text",
+          "type": "text[]",
           "primaryKey": false,
           "notNull": true
         },
@@ -398,10 +398,30 @@
           "type": "integer",
           "primaryKey": false,
           "notNull": false
+        },
+        "restaurant_id": {
+          "name": "restaurant_id",
+          "type": "text",
+          "primaryKey": false,
+          "notNull": false
         }
       },
       "indexes": {},
-      "foreignKeys": {},
+      "foreignKeys": {
+        "unitys_restaurant_id_restaurants_id_fk": {
+          "name": "unitys_restaurant_id_restaurants_id_fk",
+          "tableFrom": "unitys",
+          "tableTo": "restaurants",
+          "columnsFrom": [
+            "restaurant_id"
+          ],
+          "columnsTo": [
+            "id"
+          ],
+          "onDelete": "set null",
+          "onUpdate": "no action"
+        }
+      },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
         "unitys_unity_unique": {

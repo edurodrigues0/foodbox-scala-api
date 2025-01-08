@@ -15,7 +15,6 @@ export async function refresh(app: FastifyInstance) {
           200: z.object({
             auth_metadata: z.object({
               token: z.string(),
-              refresh_token: z.string(),
             }),
             user: z.object({
               id: z.string().cuid2(),
@@ -77,7 +76,6 @@ export async function refresh(app: FastifyInstance) {
           .send({
             auth_metadata: {
               token,
-              refresh_token: refreshToken,
             },
             user: {
               ...user,

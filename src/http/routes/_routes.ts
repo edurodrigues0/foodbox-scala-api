@@ -18,11 +18,15 @@ import { createOrders } from './create-orders'
 import { restaurantConnection } from './restaurant-connection'
 import { getMenuTodayAndTomorrow } from './get-menus-today-and-tomorrow'
 import { getColaboratorsOrderSummary } from './get-colaborators-orders-summary'
+import { getUnits } from './get-units'
+import { getProfile } from './get-profile'
+import { signOut } from './sign-out'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
   app.register(authenticate)
   app.register(refresh)
+  app.register(signOut)
 
   // Colaborators
   app.register(createColaborator)
@@ -50,6 +54,12 @@ export async function Routes(app: FastifyInstance) {
 
   // Orders
   app.register(createOrders)
+
+  // Units
+  app.register(getUnits)
+
+  // Profile
+  app.register(getProfile)
 
   app.register(restaurantConnection)
 }
