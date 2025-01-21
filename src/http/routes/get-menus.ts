@@ -4,9 +4,10 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
-import { count, desc } from 'drizzle-orm'
+import { count, desc, eq } from 'drizzle-orm'
 import { menus } from '../../database/schema'
 import { getMenusPresenters } from '../presenters/get-menus-presenters'
+import { ResourceNotFoundError } from '../../errors/resource-not-found'
 
 export async function getMenus(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -25,6 +26,7 @@ export async function getMenus(app: FastifyInstance) {
                 id: z.string().cuid2(),
                 name: z.string(),
                 created_at: z.coerce.string(),
+                description: z.array(z.string()),
                 service_date: z.coerce.string(),
               }),
             ),
@@ -38,16 +40,35 @@ export async function getMenus(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
+      await request.jwtVerify({ onlyCookie: true })
+
+      const { sub } = request.user
+
       const { pageIndex } = request.query
+
+      const restaurant = await db.query.restaurants.findFirst({
+        columns: {
+          id: true,
+        },
+        where(fields, { eq }) {
+          return eq(fields.managerId, sub)
+        },
+      })
+
+      if (!restaurant) {
+        throw new ResourceNotFoundError()
+      }
 
       const baseQuery = db
         .select({
           id: menus.id,
           name: menus.name,
           created_at: menus.createdAt,
+          description: menus.description,
           service_date: menus.serviceDate,
         })
         .from(menus)
+        .where(eq(menus.restaurantId, restaurant.id))
 
       const [amountOfMenusQuery, allMenus] = await Promise.all([
         db.select({ count: count() }).from(baseQuery.as('baseQuery')),

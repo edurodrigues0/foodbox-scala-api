@@ -192,6 +192,7 @@ export async function getColaboratorsOrderSummary(app: FastifyInstance) {
         if (error instanceof InvalidCredentialsError) {
           return reply.status(401).send({ message: error.message })
         }
+
         throw error
       }
     },

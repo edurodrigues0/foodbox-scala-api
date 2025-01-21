@@ -18,8 +18,9 @@ export async function createColaborator(app: FastifyInstance) {
         tags: ['colaborators'],
         body: z.object({
           name: z.string().min(3).max(100),
-          // registration: z.number(),
+          registration: z.number(),
           cpf: z.string(),
+          sectorId: z.string().cuid2(),
         }),
         response: {
           201: z.object({
@@ -33,7 +34,7 @@ export async function createColaborator(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const { name, cpf } = request.body
+        const { name, cpf, registration, sectorId } = request.body
 
         const hmacCPF = hmacCPFFn(cpf)
         const hashedCPF = encryptCPF(cpf)
@@ -54,6 +55,8 @@ export async function createColaborator(app: FastifyInstance) {
             name,
             cpf: hashedCPF,
             hmac_cpf: hmacCPF,
+            sectorId,
+            registration,
           })
           .returning({
             name: colaborators.name,

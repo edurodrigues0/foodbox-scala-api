@@ -62,13 +62,19 @@ app.register(fastifyJwt, {
 
 app.register(Routes)
 
-app.setErrorHandler((error, _, reply) => {
+app.setErrorHandler((error, request, reply) => {
   if (error instanceof ZodError) {
     return reply.status(400).send({
       message: 'Validation error.',
       issues: error.flatten().fieldErrors,
     })
   }
+
+  // if (!request.cookies.Authorization) {
+  //   return reply.status(401).send({
+  //     message: 'Authorization token not found in cookie.',
+  //   })
+  // }
 
   if (env.NODE_ENV !== 'prod') {
     console.error(error)

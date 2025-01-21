@@ -4,7 +4,7 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 export async function signOut(app: FastifyInstance) {
-  app.withTypeProvider<ZodTypeProvider>().post(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/sign-out',
     {
       schema: {
@@ -18,7 +18,7 @@ export async function signOut(app: FastifyInstance) {
         },
       },
     },
-    async (request, reply) => {
+    async (_, reply) => {
       try {
         reply.clearCookie('refreshToken', {
           path: '/',

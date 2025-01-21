@@ -21,7 +21,7 @@ export async function getMenu(app: FastifyInstance) {
             menu: z.object({
               id: z.string().cuid2(),
               name: z.string(),
-              description: z.string(),
+              description: z.array(z.string()),
               allergens: z.string().nullable(),
               service_date: z.string(),
               created_at: z.string(),

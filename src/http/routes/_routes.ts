@@ -21,6 +21,7 @@ import { getColaboratorsOrderSummary } from './get-colaborators-orders-summary'
 import { getUnits } from './get-units'
 import { getProfile } from './get-profile'
 import { signOut } from './sign-out'
+import { getSectors } from './get-sectors'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -60,6 +61,9 @@ export async function Routes(app: FastifyInstance) {
 
   // Profile
   app.register(getProfile)
+
+  // Sector
+  app.register(getSectors)
 
   app.register(restaurantConnection)
 }

@@ -8,6 +8,7 @@ import { db } from '../../database/connection'
 import { menus } from '../../database/schema'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
 import { DataAlreadyExistsError } from '../../errors/data-already-existis'
+import dayjs from 'dayjs'
 
 export async function updateMenu(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().put(
@@ -49,13 +50,22 @@ export async function updateMenu(app: FastifyInstance) {
         }
 
         const serviceDateFormatted = serviceDate
-          ? new Date(serviceDate)
+          ? dayjs(serviceDate)
           : undefined
 
         if (serviceDateFormatted) {
           const menuWithSameDayInMonth = await db.query.menus.findFirst({
-            where(fields, { gte }) {
-              return gte(fields.serviceDate, serviceDateFormatted)
+            where(fields, { and, gte, lte }) {
+              return and(
+                gte(
+                  fields.serviceDate,
+                  serviceDateFormatted.startOf('day').toDate(),
+                ),
+                lte(
+                  fields.serviceDate,
+                  serviceDateFormatted.endOf('day').toDate(),
+                ),
+              )
             },
           })
 
@@ -70,7 +80,7 @@ export async function updateMenu(app: FastifyInstance) {
             name,
             description,
             allergens,
-            serviceDate: serviceDateFormatted,
+            serviceDate: serviceDateFormatted?.toDate(),
           })
           .where(eq(menus.id, menuId))
 

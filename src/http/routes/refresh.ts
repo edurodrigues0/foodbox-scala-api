@@ -5,7 +5,7 @@ import { db } from '../../database/connection'
 import { UnauthorizedError } from '../../errors/unauthorized'
 
 export async function refresh(app: FastifyInstance) {
-  app.withTypeProvider<ZodTypeProvider>().post(
+  app.withTypeProvider<ZodTypeProvider>().get(
     '/auth/refresh',
     {
       schema: {

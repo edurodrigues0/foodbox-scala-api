@@ -21,7 +21,7 @@ export async function createMenu(app: FastifyInstance) {
           name: z.string(),
           serviceDate: z.string(),
           description: z.array(z.string()),
-          allergens: z.string().optional(),
+          allergens: z.string().nullish(),
         }),
         response: {
           201: z.object({
@@ -62,8 +62,14 @@ export async function createMenu(app: FastifyInstance) {
           }
 
           const menuWithSameDayInMonth = await db.query.menus.findFirst({
-            where(fields, { gte }) {
-              return gte(fields.serviceDate, serviceDateFormated.toDate())
+            where(fields, { gte, lte, and }) {
+              return and(
+                lte(
+                  fields.serviceDate,
+                  serviceDateFormated.endOf('day').toDate(),
+                ),
+                gte(fields.serviceDate, serviceDateFormated.toDate()),
+              )
             },
           })
 

@@ -42,7 +42,7 @@ export async function getMenuTodayAndTomorrow(app: FastifyInstance) {
         const { unitId } = request.params
 
         const startDate = dayjs().startOf('day')
-        const endTomorrowDate = dayjs().add(0, 'day').endOf('day')
+        const endTomorrowDate = dayjs().add(1, 'days').endOf('day')
 
         const menusTodayAndTomorrow = await db
           .select({
