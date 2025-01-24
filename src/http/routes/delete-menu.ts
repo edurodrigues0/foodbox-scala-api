@@ -42,11 +42,11 @@ export async function deleteMenu(app: FastifyInstance) {
           throw new ResourceNotFoundError()
         }
 
-        const currentDate = new Date()
+        const currentDate = dayjs()
         const deleteLimitTime = dayjs(menu.serviceDate).diff(
           currentDate,
           'day',
-          true,
+          false,
         )
 
         if (deleteLimitTime >= 2) {

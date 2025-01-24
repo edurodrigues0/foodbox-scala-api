@@ -2,6 +2,7 @@ import { createId } from '@paralleldrive/cuid2'
 import { relations } from 'drizzle-orm'
 import { pgEnum, pgTable, text, timestamp, varchar } from 'drizzle-orm/pg-core'
 import { restaurants } from './restaurants'
+import { sectors } from './sectors'
 
 export const userRoleEnum = pgEnum('role', [
   'admin',
@@ -28,6 +29,11 @@ export const usersRelations = relations(users, ({ one }) => {
       fields: [users.id],
       references: [restaurants.managerId],
       relationName: 'managed_restaurant',
+    }),
+    managedSector: one(sectors, {
+      fields: [users.id],
+      references: [sectors.userId],
+      relationName: 'managed_sector',
     }),
   }
 })
