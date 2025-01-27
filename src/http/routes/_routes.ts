@@ -22,6 +22,7 @@ import { getUnits } from './get-units'
 import { getProfile } from './get-profile'
 import { signOut } from './sign-out'
 import { getSectors } from './get-sectors'
+import { getUsers } from './get-users'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -39,6 +40,7 @@ export async function Routes(app: FastifyInstance) {
 
   // Users
   app.register(registerUsers)
+  app.register(getUsers)
 
   // Restaurants
   app.register(getRestaurant)
