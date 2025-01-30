@@ -23,6 +23,7 @@ import { getProfile } from './get-profile'
 import { signOut } from './sign-out'
 import { getSectors } from './get-sectors'
 import { getUsers } from './get-users'
+import { deleteUser } from './delete-user'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -41,6 +42,7 @@ export async function Routes(app: FastifyInstance) {
   // Users
   app.register(registerUsers)
   app.register(getUsers)
+  app.register(deleteUser)
 
   // Restaurants
   app.register(getRestaurant)

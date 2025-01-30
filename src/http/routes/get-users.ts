@@ -2,8 +2,8 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
-import { and, count, desc, eq, ilike } from 'drizzle-orm'
-import { userRoleEnum, users } from '../../database/schema'
+import { and, count, ne, ilike, eq } from 'drizzle-orm'
+import { sectors, unitys, userRoleEnum, users } from '../../database/schema'
 import { z } from 'zod'
 import { UnauthorizedError } from '../../errors/unauthorized'
 
@@ -16,18 +16,17 @@ export async function getUsers(app: FastifyInstance) {
         tags: ['users'],
         querystring: z.object({
           pageIndex: z.coerce.number().default(0),
-          userRole: z.enum([...userRoleEnum.enumValues]).optional(),
           userName: z.string().optional(),
-          userEmail: z.string().optional(),
         }),
         response: {
           200: z.object({
             users: z.array(
               z.object({
                 id: z.string().cuid2(),
-                name: z.string(),
-                email: z.string(),
-                role: z.string(),
+                user_name: z.string(),
+                role: z.enum([...userRoleEnum.enumValues]),
+                unit_name: z.string().nullable(),
+                sector_name: z.string().nullable(),
               }),
             ),
             meta: z.object({
@@ -46,7 +45,7 @@ export async function getUsers(app: FastifyInstance) {
       try {
         await request.jwtVerify({ onlyCookie: true })
         const { sub } = request.user
-        const { pageIndex, userName, userEmail, userRole } = request.query
+        const { pageIndex, userName } = request.query
 
         const user = await db.query.users.findFirst({
           columns: {
@@ -66,29 +65,26 @@ export async function getUsers(app: FastifyInstance) {
         const baseQuery = db
           .select({
             id: users.id,
-            name: users.name,
-            email: users.email,
+            user_name: users.name,
             role: users.role,
+            unit_name: unitys.name,
+            sector_name: sectors.name,
           })
           .from(users)
+          .leftJoin(sectors, eq(sectors.userId, users.id))
+          .leftJoin(unitys, eq(sectors.unityId, unitys.id))
           .where(
             and(
-              userName ? ilike(users.name, `%${userName}`) : undefined,
-              userEmail ? ilike(users.email, `%${userEmail}`) : undefined,
-              userRole ? eq(users.role, userRole) : undefined,
+              userName ? ilike(users.name, `%${userName}%`) : undefined,
+              ne(users.role, 'restaurant'),
             ),
           )
+          .orderBy(users.name)
+          .groupBy(users.id, unitys.name, sectors.name)
 
         const [amountOfUsersQuery, allUsers] = await Promise.all([
           db.select({ count: count() }).from(baseQuery.as('baseQuery')),
-          db
-            .select()
-            .from(baseQuery.as('baseQuery'))
-            .offset(pageIndex * 10)
-            .limit(10)
-            .orderBy((fields) => {
-              return [desc(fields.name)]
-            }),
+          baseQuery.offset(pageIndex * 10).limit(10),
         ])
 
         const amountOfUsers = amountOfUsersQuery[0].count
@@ -102,6 +98,7 @@ export async function getUsers(app: FastifyInstance) {
           },
         })
       } catch (error) {
+        console.log(error)
         if (error instanceof UnauthorizedError) {
           return reply.status(401).send({
             message: error.message,

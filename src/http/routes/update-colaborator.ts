@@ -6,8 +6,6 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { db } from '../../database/connection'
 import { eq } from 'drizzle-orm'
 import { colaborators } from '../../database/schema'
-import { hmacCPF as hmacCPFFn } from '../../utils/hmac-cpf'
-import { encryptCPF } from '../../utils/encrypt-cpf'
 import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 
 export async function updateColaborator(app: FastifyInstance) {
@@ -21,8 +19,10 @@ export async function updateColaborator(app: FastifyInstance) {
           colaboratorId: z.string().cuid2(),
         }),
         body: z.object({
+          registration: z.number().optional(),
           name: z.string().optional(),
           cpf: z.string().optional(),
+          sectorId: z.string().cuid2().optional(),
         }),
         response: {
           204: z.null(),
@@ -34,29 +34,16 @@ export async function updateColaborator(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const { name, cpf } = request.body
+        const { name, cpf, registration, sectorId } = request.body
         const { colaboratorId } = request.params
-
-        if (cpf) {
-          const hmacCPF = hmacCPFFn(cpf)
-
-          const colaboratorWithSameCPF = await db.query.colaborators.findFirst({
-            where(fields, { eq }) {
-              return eq(fields.hmac_cpf, hmacCPF)
-            },
-          })
-
-          if (colaboratorWithSameCPF?.id !== colaboratorId) {
-            throw new DataAlreadyExistsError()
-          }
-        }
 
         await db
           .update(colaborators)
           .set({
             name,
-            cpf: cpf ? encryptCPF(cpf) : undefined,
-            hmac_cpf: cpf ? hmacCPFFn(cpf) : undefined,
+            cpf,
+            sectorId,
+            registration,
           })
           .where(eq(colaborators.id, colaboratorId))
 

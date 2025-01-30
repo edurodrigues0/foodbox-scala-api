@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { db } from '../../database/connection'
-import { sectors, userRoleEnum, users } from '../../database/schema'
+import { sectors, unitys, userRoleEnum, users } from '../../database/schema'
 import { hash } from 'bcrypt'
 import { restaurants } from '../../database/schema/restaurants'
 import { DataAlreadyExistsError } from '../../errors/data-already-existis'
@@ -21,6 +21,7 @@ export async function registerUsers(app: FastifyInstance) {
           password: z.string().default('Scala.food@2025'),
           role: z.enum([...userRoleEnum.enumValues]).optional(),
           restaurantName: z.string().optional(),
+          unitId: z.string().cuid2().optional(),
           sectorId: z.string().cuid2().optional(),
         }),
         response: {
@@ -35,8 +36,15 @@ export async function registerUsers(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const { name, email, password, role, restaurantName, sectorId } =
-          request.body
+        const {
+          name,
+          email,
+          password,
+          role,
+          restaurantName,
+          sectorId,
+          unitId,
+        } = request.body
 
         const userWithSameEmail = await db.query.users.findFirst({
           where(fields, { eq }) {
@@ -63,11 +71,31 @@ export async function registerUsers(app: FastifyInstance) {
             email: users.email,
           })
 
-        if (role === 'restaurant' && restaurantName) {
-          await db.insert(restaurants).values({
-            name: restaurantName,
-            managerId: user.id,
+        if (role === 'restaurant' && restaurantName && unitId) {
+          const [restaurant] = await db
+            .insert(restaurants)
+            .values({
+              name: restaurantName,
+              managerId: user.id,
+            })
+            .returning()
+
+          const unit = await db.query.unitys.findFirst({
+            where(fields, { eq }) {
+              return eq(fields.id, unitId)
+            },
           })
+
+          if (unit?.restaurantId === null) {
+            await db
+              .update(unitys)
+              .set({
+                restaurantId: restaurant.id,
+              })
+              .where(eq(unitys.id, unitId))
+          } else {
+            throw new DataAlreadyExistsError()
+          }
         }
 
         if (role === 'supervisor' && sectorId) {

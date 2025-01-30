@@ -5,6 +5,8 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
+import { colaborators, sectors, unitys } from '../../database/schema'
+import { eq } from 'drizzle-orm'
 
 export async function getColaborator(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -19,8 +21,12 @@ export async function getColaborator(app: FastifyInstance) {
         response: {
           200: z.object({
             colaborator: z.object({
-              id: z.string().cuid2(),
-              name: z.string(),
+              colaborator_id: z.string().cuid2(),
+              colaborator_name: z.string(),
+              colaborator_cpf: z.string(),
+              colaborator_registration: z.number(),
+              sector_name: z.string(),
+              unit_name: z.string(),
             }),
           }),
           404: z.object({
@@ -33,15 +39,23 @@ export async function getColaborator(app: FastifyInstance) {
       try {
         const { colaboratorId } = request.params
 
-        const colaborator = await db.query.colaborators.findFirst({
-          columns: {
-            id: true,
-            name: true,
-          },
-          where(fields, { eq }) {
-            return eq(fields.id, colaboratorId)
-          },
-        })
+        await db.query.colaborators.findFirst({})
+
+        const colaborator = await db
+          .select({
+            colaborator_id: colaborators.id,
+            colaborator_name: colaborators.name,
+            colaborator_registration: colaborators.registration,
+            colaborator_cpf: colaborators.cpf,
+            sector_name: sectors.name,
+            unit_name: unitys.name,
+          })
+          .from(colaborators)
+          .innerJoin(sectors, eq(sectors.id, colaborators.sectorId))
+          .innerJoin(unitys, eq(unitys.id, sectors.unityId))
+          .where(eq(colaborators.id, colaboratorId))
+          .limit(1)
+          .then((res) => res[0])
 
         if (!colaborator) {
           throw new ResourceNotFoundError()
