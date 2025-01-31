@@ -2,7 +2,7 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
-import { eq } from 'drizzle-orm'
+import { asc, eq } from 'drizzle-orm'
 import { restaurants, unitys } from '../../database/schema'
 import { z } from 'zod'
 
@@ -39,6 +39,7 @@ export async function getUnits(app: FastifyInstance) {
         })
         .from(unitys)
         .leftJoin(restaurants, eq(restaurants.id, unitys.restaurantId))
+        .orderBy(asc(unitys.unity))
 
       return reply.status(200).send({
         units_and_restaurants: unitsAndRestaurants,

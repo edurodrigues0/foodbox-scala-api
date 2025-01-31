@@ -5,16 +5,16 @@ import { db } from '../../database/connection'
 import { unitys } from '../../database/schema'
 import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 
-export async function registerUnitys(app: FastifyInstance) {
+export async function createUnit(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
-    '/unitys',
+    '/units',
     {
       schema: {
-        summary: 'Create Unity',
-        tags: ['unitys'],
+        summary: 'Create Unit',
+        tags: ['units'],
         body: z.object({
           name: z.string(),
-          unity: z.number(),
+          unity: z.coerce.number(),
         }),
         response: {
           201: z.object({
@@ -30,6 +30,19 @@ export async function registerUnitys(app: FastifyInstance) {
       try {
         const { name, unity } = request.body
 
+        const unitWithSameCode = await db.query.unitys.findFirst({
+          columns: {
+            unity: true,
+          },
+          where(fields, { eq }) {
+            return eq(fields.unity, unity)
+          },
+        })
+
+        if (unitWithSameCode) {
+          throw new DataAlreadyExistsError()
+        }
+
         const [unityCreated] = await db
           .insert(unitys)
           .values({
@@ -38,7 +51,7 @@ export async function registerUnitys(app: FastifyInstance) {
           })
           .returning()
 
-        return reply.status(201).send({ unity_name: unityCreated.id })
+        return reply.status(201).send({ unity_name: unityCreated.name })
       } catch (error) {
         if (error instanceof DataAlreadyExistsError) {
           return reply.status(409).send({ message: error.message })

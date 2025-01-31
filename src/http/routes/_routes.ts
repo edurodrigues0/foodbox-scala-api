@@ -24,6 +24,9 @@ import { signOut } from './sign-out'
 import { getSectors } from './get-sectors'
 import { getUsers } from './get-users'
 import { deleteUser } from './delete-user'
+import { createUnit } from './create-unity'
+import { getUnit } from './get-unit'
+import { updateUnit } from './update-unit'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -61,7 +64,10 @@ export async function Routes(app: FastifyInstance) {
   app.register(createOrders)
 
   // Units
+  app.register(createUnit)
   app.register(getUnits)
+  app.register(getUnit)
+  app.register(updateUnit)
 
   // Profile
   app.register(getProfile)
