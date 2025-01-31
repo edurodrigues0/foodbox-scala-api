@@ -6,6 +6,8 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { db } from '../../database/connection'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
 import { UnauthorizedError } from '../../errors/unauthorized'
+import { eq } from 'drizzle-orm'
+import { users } from '../../database/schema'
 
 export async function deleteUser(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().delete(
@@ -19,6 +21,9 @@ export async function deleteUser(app: FastifyInstance) {
         }),
         response: {
           200: z.null(),
+          401: z.object({
+            message: z.string(),
+          }),
           404: z.object({
             message: z.string(),
           }),
@@ -26,6 +31,8 @@ export async function deleteUser(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
+      request.jwtVerify({ onlyCookie: true })
+      const { sub } = request.user
       try {
         const { userId } = request.params
 
@@ -38,6 +45,16 @@ export async function deleteUser(app: FastifyInstance) {
         if (!user) {
           throw new ResourceNotFoundError()
         }
+
+        if (user.role === 'restaurant' || user.role !== 'supervisor') {
+          throw new UnauthorizedError()
+        }
+
+        if (user.id === sub) {
+          throw new UnauthorizedError()
+        }
+
+        await db.delete(users).where(eq(users.id, userId))
 
         return reply.status(200).send()
       } catch (error) {

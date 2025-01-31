@@ -11,8 +11,6 @@ import {
   users,
 } from './schema'
 import { hash } from 'bcrypt'
-import { encryptCPF } from '../utils/encrypt-cpf'
-import { hmacCPF } from '../utils/hmac-cpf'
 import { eq } from 'drizzle-orm'
 
 /**
@@ -153,15 +151,12 @@ const createSector = async (unityId: string) => {
  */
 const createColaborator = async (sectorId: string) => {
   const cpf = '146.113.760-87'
-  const encryptedCPF = encryptCPF(cpf)
-  const hashedHmacCPF = hmacCPF(cpf)
 
   const [colaborator] = await db
     .insert(colaborators)
     .values({
       name: faker.person.fullName(),
-      cpf: encryptedCPF,
-      hmac_cpf: hashedHmacCPF,
+      cpf,
       sectorId,
     })
     .returning()

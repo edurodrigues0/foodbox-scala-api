@@ -5,8 +5,6 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
 import { colaborators } from '../../database/schema'
-import { hmacCPF as hmacCPFFn } from '../../utils/hmac-cpf'
-import { encryptCPF } from '../../utils/encrypt-cpf'
 import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 
 export async function createColaborator(app: FastifyInstance) {
@@ -36,12 +34,9 @@ export async function createColaborator(app: FastifyInstance) {
       try {
         const { name, cpf, registration, sectorId } = request.body
 
-        const hmacCPF = hmacCPFFn(cpf)
-        const hashedCPF = encryptCPF(cpf)
-
         const colaboratorAlreadyExist = await db.query.colaborators.findFirst({
           where(fields, { eq }) {
-            return eq(fields.hmac_cpf, hmacCPF)
+            return eq(fields.cpf, cpf)
           },
         })
 
@@ -53,8 +48,7 @@ export async function createColaborator(app: FastifyInstance) {
           .insert(colaborators)
           .values({
             name,
-            cpf: hashedCPF,
-            hmac_cpf: hmacCPF,
+            cpf,
             sectorId,
             registration,
           })

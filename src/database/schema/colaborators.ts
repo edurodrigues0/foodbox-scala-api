@@ -10,7 +10,6 @@ export const colaborators = pgTable('colaborators', {
   name: varchar('name', { length: 100 }).notNull(),
   registration: serial('registration').notNull().unique(),
   cpf: text('cpf').notNull().unique(),
-  hmac_cpf: text('hmac_cpf').notNull().unique(),
   sectorId: text('sector_id')
     .references(() => sectors.id)
     .default('1'),
