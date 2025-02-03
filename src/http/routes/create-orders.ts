@@ -23,7 +23,7 @@ export async function createOrders(app: FastifyInstance) {
           201: z.object({
             name: z.string(),
           }),
-          409: z.object({
+          404: z.object({
             message: z.string(),
           }),
         },
@@ -69,7 +69,7 @@ export async function createOrders(app: FastifyInstance) {
         })
       } catch (error) {
         if (error instanceof ResourceNotFoundError) {
-          return reply.status(409).send({
+          return reply.status(404).send({
             message: error.message,
           })
         }

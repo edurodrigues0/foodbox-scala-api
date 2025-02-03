@@ -27,6 +27,8 @@ import { deleteUser } from './delete-user'
 import { createUnit } from './create-unity'
 import { getUnit } from './get-unit'
 import { updateUnit } from './update-unit'
+import { createSector } from './create-sector'
+import { getAllSectors } from './get-all-sectors'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -73,7 +75,9 @@ export async function Routes(app: FastifyInstance) {
   app.register(getProfile)
 
   // Sector
+  app.register(createSector)
   app.register(getSectors)
+  app.register(getAllSectors)
 
   app.register(restaurantConnection)
 }
