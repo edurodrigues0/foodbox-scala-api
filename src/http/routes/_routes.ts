@@ -29,6 +29,8 @@ import { getUnit } from './get-unit'
 import { updateUnit } from './update-unit'
 import { createSector } from './create-sector'
 import { getAllSectors } from './get-all-sectors'
+import { getSector } from './get-sector'
+import { updateSector } from './update-sector'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -78,6 +80,8 @@ export async function Routes(app: FastifyInstance) {
   app.register(createSector)
   app.register(getSectors)
   app.register(getAllSectors)
+  app.register(getSector)
+  app.register(updateSector)
 
   app.register(restaurantConnection)
 }

@@ -25,5 +25,10 @@ export const sectorsRelations = relations(sectors, ({ one }) => {
       references: [unitys.id],
       relationName: 'sector_unity',
     }),
+    supervisor: one(users, {
+      fields: [sectors.userId],
+      references: [users.id],
+      relationName: 'sector_user',
+    }),
   }
 })

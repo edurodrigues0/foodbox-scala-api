@@ -9,7 +9,7 @@ import { sectors } from '../../database/schema'
 
 export async function getSectors(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    '/sectors/:unitId',
+    '/sectors/:unitId/unit',
     {
       schema: {
         summary: 'Get Sectors',
