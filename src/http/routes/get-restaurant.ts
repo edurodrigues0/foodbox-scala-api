@@ -45,6 +45,11 @@ export async function getRestaurant(app: FastifyInstance) {
             name: true,
           },
           with: {
+            units: {
+              columns: {
+                name: true,
+              },
+            },
             manager: {
               columns: {
                 name: true,

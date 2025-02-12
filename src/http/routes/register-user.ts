@@ -2,9 +2,8 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { z } from 'zod'
 import { db } from '../../database/connection'
-import { sectors, unitys, userRoleEnum, users } from '../../database/schema'
+import { sectors, userRoleEnum, users } from '../../database/schema'
 import { hash } from 'bcrypt'
-import { restaurants } from '../../database/schema/restaurants'
 import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 import { eq } from 'drizzle-orm'
 
@@ -36,15 +35,7 @@ export async function registerUsers(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const {
-          name,
-          email,
-          password,
-          role,
-          restaurantName,
-          sectorId,
-          unitId,
-        } = request.body
+        const { name, email, password, role, sectorId } = request.body
 
         const userWithSameEmail = await db.query.users.findFirst({
           where(fields, { eq }) {
@@ -70,33 +61,6 @@ export async function registerUsers(app: FastifyInstance) {
             id: users.id,
             email: users.email,
           })
-
-        if (role === 'restaurant' && restaurantName && unitId) {
-          const [restaurant] = await db
-            .insert(restaurants)
-            .values({
-              name: restaurantName,
-              managerId: user.id,
-            })
-            .returning()
-
-          const unit = await db.query.unitys.findFirst({
-            where(fields, { eq }) {
-              return eq(fields.id, unitId)
-            },
-          })
-
-          if (unit?.restaurantId === null) {
-            await db
-              .update(unitys)
-              .set({
-                restaurantId: restaurant.id,
-              })
-              .where(eq(unitys.id, unitId))
-          } else {
-            throw new DataAlreadyExistsError()
-          }
-        }
 
         if (role === 'supervisor' && sectorId) {
           await db

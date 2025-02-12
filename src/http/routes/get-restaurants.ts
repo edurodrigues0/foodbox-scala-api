@@ -4,8 +4,8 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
-import { and, count, desc, ilike } from 'drizzle-orm'
-import { restaurants } from '../../database/schema'
+import { and, count, eq, ilike } from 'drizzle-orm'
+import { restaurants, unitys } from '../../database/schema'
 
 export async function getRestaurants(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -41,10 +41,11 @@ export async function getRestaurants(app: FastifyInstance) {
       const baseQuery = db
         .select({
           id: restaurants.id,
-          name: restaurants.name,
-          created_at: restaurants.createdAt,
+          unit_name: unitys.name,
+          restaurant_name: restaurants.name,
         })
         .from(restaurants)
+        .leftJoin(unitys, eq(unitys.restaurantId, restaurants.id))
         .where(
           and(
             restaurantName
@@ -52,17 +53,12 @@ export async function getRestaurants(app: FastifyInstance) {
               : undefined,
           ),
         )
+        .orderBy(restaurants.name)
+        .groupBy(restaurants.id, unitys.name, restaurants.name)
 
       const [amountOfRestaurantsQuery, allRestaurants] = await Promise.all([
         db.select({ count: count() }).from(baseQuery.as('baseQuery')),
-        db
-          .select()
-          .from(baseQuery.as('baseQuery'))
-          .offset(pageIndex * 10)
-          .limit(10)
-          .orderBy((fields) => {
-            return [desc(fields.name)]
-          }),
+        baseQuery.offset(pageIndex * 10).limit(10),
       ])
 
       const amountOfRestaurants = amountOfRestaurantsQuery[0].count

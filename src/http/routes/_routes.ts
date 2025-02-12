@@ -31,6 +31,7 @@ import { createSector } from './create-sector'
 import { getAllSectors } from './get-all-sectors'
 import { getSector } from './get-sector'
 import { updateSector } from './update-sector'
+import { createRestaurant } from './create-restaurant'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -52,6 +53,7 @@ export async function Routes(app: FastifyInstance) {
   app.register(deleteUser)
 
   // Restaurants
+  app.register(createRestaurant)
   app.register(getRestaurant)
   app.register(getRestaurants)
   app.register(updateRestaurant)

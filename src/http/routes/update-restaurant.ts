@@ -5,7 +5,7 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
-import { restaurants } from '../../database/schema'
+import { restaurants, unitys } from '../../database/schema'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
 
 export async function updateRestaurant(app: FastifyInstance) {
@@ -20,6 +20,7 @@ export async function updateRestaurant(app: FastifyInstance) {
         }),
         body: z.object({
           name: z.string().optional(),
+          unitId: z.string().optional(),
         }),
         response: {
           204: z.null(),
@@ -31,10 +32,13 @@ export async function updateRestaurant(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const { name } = request.body
+        const { name, unitId } = request.body
         const { restaurantId } = request.params
 
-        const restaurant = db.query.restaurants.findFirst({
+        const restaurant = await db.query.restaurants.findFirst({
+          columns: {
+            id: true,
+          },
           where(fields, { eq }) {
             return eq(fields.id, restaurantId)
           },
@@ -44,12 +48,35 @@ export async function updateRestaurant(app: FastifyInstance) {
           throw new ResourceNotFoundError()
         }
 
-        await db
-          .update(restaurants)
-          .set({
-            name,
+        if (name) {
+          await db
+            .update(restaurants)
+            .set({
+              name,
+            })
+            .where(eq(restaurants.id, restaurantId))
+        }
+
+        if (unitId) {
+          const unit = await db.query.unitys.findFirst({
+            where(fields, { eq }) {
+              return eq(fields.id, unitId)
+            },
           })
-          .where(eq(restaurants.id, restaurantId))
+
+          if (!unit) {
+            throw new ResourceNotFoundError()
+          }
+
+          if (unit.restaurantId !== unitId) {
+            await db
+              .update(unitys)
+              .set({
+                restaurantId: restaurant.id,
+              })
+              .where(eq(unitys.id, unitId))
+          }
+        }
 
         return reply.status(204).send()
       } catch (error) {
