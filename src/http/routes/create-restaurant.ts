@@ -13,7 +13,7 @@ export async function createRestaurant(app: FastifyInstance) {
     {
       schema: {
         summary: 'Create Sector',
-        tags: ['sectors'],
+        tags: ['restaurants'],
         body: z.object({
           userName: z.string(),
           userEmail: z.string().email(),
