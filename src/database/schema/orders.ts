@@ -22,7 +22,7 @@ export const orders = pgTable('orders', {
 
 export const ordersRelations = relations(orders, ({ one }) => {
   return {
-    restaurant: one(colaborators, {
+    colaborators: one(colaborators, {
       fields: [orders.colaboratorId],
       references: [colaborators.id],
       relationName: 'orders_colaborator',
