@@ -33,6 +33,7 @@ import { getSector } from './get-sector'
 import { updateSector } from './update-sector'
 import { createRestaurant } from './create-restaurant'
 import { getRecentOrders } from './get-recent-orders'
+import { getOrdersRestaurant } from './get-orders-restaurant'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -70,6 +71,7 @@ export async function Routes(app: FastifyInstance) {
   // Orders
   app.register(createOrders)
   app.register(getRecentOrders)
+  app.register(getOrdersRestaurant)
 
   // Units
   app.register(createUnit)
@@ -87,5 +89,6 @@ export async function Routes(app: FastifyInstance) {
   app.register(getSector)
   app.register(updateSector)
 
+  // WS
   app.register(restaurantConnection)
 }
