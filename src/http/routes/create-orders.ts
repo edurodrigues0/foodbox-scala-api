@@ -1,10 +1,11 @@
 import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { db } from '../../database/connection'
-import { orders } from '../../database/schema'
+import { menus, orders, restaurants } from '../../database/schema'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
 import { z } from 'zod'
 import { restaurantConnections } from '../../utils/connection-manager'
+import { eq } from 'drizzle-orm'
 
 export async function createOrders(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -47,7 +48,7 @@ export async function createOrders(app: FastifyInstance) {
           throw new ResourceNotFoundError()
         }
 
-        const [order] = await db
+        await db
           .insert(orders)
           .values({
             colaboratorId: colaborator.id,
@@ -58,10 +59,18 @@ export async function createOrders(app: FastifyInstance) {
           .returning()
 
         if (restaurantConnections.has(restaurantId)) {
-          const connections = restaurantConnections.get(restaurantId)
-          connections?.forEach((connection) => {
-            connection.send(JSON.stringify({ type: 'new-order', data: order }))
-          })
+          const currentOrders = await db
+            .select({
+              orderId: orders.id,
+            })
+            .from(orders)
+            .innerJoin(menus, eq(orders.menuId, menus.id))
+            .innerJoin(restaurants, eq(menus.restaurantId, restaurants.id))
+            .where(eq(restaurants.id, restaurantId))
+
+          restaurantConnections
+            .get(restaurantId)
+            ?.send(JSON.stringify(currentOrders))
         }
 
         return reply.status(201).send({
