@@ -35,6 +35,7 @@ import { createRestaurant } from './create-restaurant'
 import { getRecentOrders } from './get-recent-orders'
 import { getOrdersRestaurant } from './get-orders-restaurant'
 import { getColaboratorsBySector } from './get-colaborators-by-sector'
+import { getOrdersBySector } from './get-orders-by-sector'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -74,6 +75,7 @@ export async function Routes(app: FastifyInstance) {
   app.register(createOrders)
   app.register(getRecentOrders)
   app.register(getOrdersRestaurant)
+  app.register(getOrdersBySector)
 
   // Units
   app.register(createUnit)
