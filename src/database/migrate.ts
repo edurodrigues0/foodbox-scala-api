@@ -14,7 +14,7 @@ export const up = async (db: PostgresJsDatabase) => {
     DO $$ 
     BEGIN 
       IF NOT EXISTS (SELECT 1 FROM pg_type WHERE typname = 'role') THEN
-        CREATE TYPE "role" AS ENUM ('admin', 'user', 'manager');
+        CREATE TYPE "role" AS ENUM ('admin', 'user', 'supervisor', 'manager');
       END IF;
     END $$;
   `)
