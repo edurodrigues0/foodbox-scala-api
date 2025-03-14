@@ -1,4 +1,8 @@
-CREATE TYPE "public"."role" AS ENUM('admin', 'rh', 'supervisor', 'restaurant');--> statement-breakpoint
+DO $$ BEGIN
+	CREATE TYPE "public"."role" AS ENUM('admin', 'rh', 'supervisor', 'restaurant');--> statement-breakpoint
+EXCEPTION
+	WHEN duplicate_object THEN RAISE NOTICE 'role type already created';
+END $$;
 CREATE TABLE "collaborators" (
 	"id" text PRIMARY KEY NOT NULL,
 	"name" varchar(100) NOT NULL,
