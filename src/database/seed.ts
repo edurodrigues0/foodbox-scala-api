@@ -2,7 +2,7 @@ import { faker } from '@faker-js/faker'
 
 import { db } from './connection'
 import {
-  colaborators,
+  collaborators,
   menus,
   orders,
   restaurants,
@@ -18,7 +18,7 @@ import { eq } from 'drizzle-orm'
  */
 async function deleteAllDatabase() {
   await db.delete(orders)
-  await db.delete(colaborators)
+  await db.delete(collaborators)
   await db.delete(menus)
   await db.delete(restaurants)
   await db.delete(sectors)
@@ -153,7 +153,7 @@ const createColaborator = async (sectorId: string) => {
   const cpf = '146.113.760-87'
 
   const [colaborator] = await db
-    .insert(colaborators)
+    .insert(collaborators)
     .values({
       name: faker.person.fullName(),
       cpf,

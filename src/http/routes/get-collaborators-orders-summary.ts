@@ -6,7 +6,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
 import { and, count, eq, gte, ilike, lte, sql } from 'drizzle-orm'
-import { colaborators, orders, sectors, unitys } from '../../database/schema'
+import { collaborators, orders, sectors, unitys } from '../../database/schema'
 import { InvalidCredentialsError } from '../../errors/invalid-credentials'
 
 type Collaborator = {
@@ -18,7 +18,7 @@ type Collaborator = {
 
 type Sector = {
   sector: string
-  colaborators: Collaborator[]
+  collaborators: Collaborator[]
 }
 
 type Unity = {
@@ -26,13 +26,13 @@ type Unity = {
   sectors: Sector[]
 }
 
-export async function getColaboratorsOrderSummary(app: FastifyInstance) {
+export async function getCollaboratorsOrderSummary(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    '/colaborators/orders/summary',
+    '/collaborators/orders/summary',
     {
       schema: {
-        summary: 'Get Colaborators Orders Summary',
-        tags: ['colaborators', 'orders', 'summary'],
+        summary: 'Get Collaborators Orders Summary',
+        tags: ['collaborators', 'orders', 'summary'],
         querystring: z.object({
           pageIndex: z.coerce.number().default(0),
           from: z.coerce.date().optional(),
@@ -50,7 +50,7 @@ export async function getColaboratorsOrderSummary(app: FastifyInstance) {
                 sectors: z.array(
                   z.object({
                     sector: z.string(),
-                    colaborators: z.array(
+                    collaborators: z.array(
                       z.object({
                         id: z.string().cuid2(),
                         registration: z.number(),
@@ -94,35 +94,35 @@ export async function getColaboratorsOrderSummary(app: FastifyInstance) {
           .select({
             unity: unitys.name,
             sector: sectors.name,
-            colaborator_name: colaborators.name,
-            colaborator_registration: colaborators.registration,
-            colaborator_id: colaborators.id,
+            colaborator_name: collaborators.name,
+            colaborator_registration: collaborators.registration,
+            colaborator_id: collaborators.id,
             spent: sql`SUM(orders.price)`.as(`spent`),
           })
           .from(orders)
-          .innerJoin(colaborators, eq(colaborators.id, orders.colaboratorId))
-          .innerJoin(sectors, eq(sectors.id, colaborators.sectorId))
+          .innerJoin(collaborators, eq(collaborators.id, orders.colaboratorId))
+          .innerJoin(sectors, eq(sectors.id, collaborators.sectorId))
           .innerJoin(unitys, eq(unitys.id, sectors.unityId))
           .where(
             and(
               gte(orders.orderDate, startDate.toDate()),
               lte(orders.orderDate, endDate.toDate()),
-              name ? ilike(colaborators.name, `%${name}%`) : undefined,
+              name ? ilike(collaborators.name, `%${name}%`) : undefined,
               unity ? ilike(unitys.name, `%${unity}%`) : undefined,
               sector ? ilike(sectors.name, `%${sector}%`) : undefined,
               registration
-                ? eq(colaborators.registration, registration)
+                ? eq(collaborators.registration, registration)
                 : undefined,
             ),
           )
           .groupBy(
             unitys.name,
             sectors.name,
-            colaborators.name,
-            colaborators.id,
-            colaborators.registration,
+            collaborators.name,
+            collaborators.id,
+            collaborators.registration,
           )
-          .orderBy(unitys.name, sectors.name, colaborators.name)
+          .orderBy(unitys.name, sectors.name, collaborators.name)
           .limit(10)
           .offset(pageIndex * 10)
 
@@ -158,7 +158,7 @@ export async function getColaboratorsOrderSummary(app: FastifyInstance) {
             if (!sectorData) {
               unityData.sectors.push({
                 sector,
-                colaborators: [
+                collaborators: [
                   {
                     id: colaborator_id,
                     registration: colaborator_registration,
@@ -168,7 +168,7 @@ export async function getColaboratorsOrderSummary(app: FastifyInstance) {
                 ],
               })
             } else {
-              sectorData.colaborators.push({
+              sectorData.collaborators.push({
                 id: colaborator_id,
                 registration: colaborator_registration,
                 colaborator_name,

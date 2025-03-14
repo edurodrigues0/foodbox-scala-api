@@ -4,24 +4,25 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
 import { and, count, eq, ilike } from 'drizzle-orm'
-import { colaborators, sectors, unitys } from '../../database/schema'
-import { ResourceNotFoundError } from '../../errors/resource-not-found'
+import { collaborators, sectors, unitys } from '../../database/schema'
 
-export async function getColaboratorsBySector(app: FastifyInstance) {
+export async function getCollaborators(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    '/colaborators/sector',
+    '/collaborators',
     {
       schema: {
-        summary: 'Get Colaborators',
-        tags: ['colaborators'],
+        summary: 'Get Collaborators',
+        tags: ['collaborators'],
         querystring: z.object({
           pageIndex: z.coerce.number().default(0),
           name: z.string().optional(),
+          unit: z.string().optional(),
+          sector: z.string().optional(),
           registration: z.coerce.number().optional(),
         }),
         response: {
           200: z.object({
-            colaborators: z.array(
+            collaborators: z.array(
               z.object({
                 colaborator_id: z.string().cuid2(),
                 colaborator_name: z.string(),
@@ -40,71 +41,60 @@ export async function getColaboratorsBySector(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      await request.jwtVerify({ onlyCookie: true })
-      const { sub } = request.user
-
-      const { pageIndex, name, registration } = request.query
-
-      const sector = await db.query.sectors.findFirst({
-        where(fields, { eq }) {
-          return eq(fields.userId, sub)
-        },
-      })
-
-      if (!sector) {
-        throw new ResourceNotFoundError()
-      }
+      const { pageIndex, name, registration, sector, unit } = request.query
 
       const baseQuery = db
         .select({
-          colaborator_id: colaborators.id,
-          colaborator_name: colaborators.name,
-          colaborator_registration: colaborators.registration,
+          colaborator_id: collaborators.id,
+          colaborator_name: collaborators.name,
+          colaborator_registration: collaborators.registration,
           sector_name: sectors.name,
           unit_name: unitys.name,
         })
-        .from(colaborators)
-        .innerJoin(sectors, eq(sectors.id, colaborators.sectorId))
+        .from(collaborators)
+        .innerJoin(sectors, eq(sectors.id, collaborators.sectorId))
         .innerJoin(unitys, eq(unitys.id, sectors.unityId))
         .where(
           and(
-            eq(sectors.id, sector.id),
-            name ? ilike(colaborators.name, `%${name}%`) : undefined,
+            name ? ilike(collaborators.name, `%${name}%`) : undefined,
+            unit ? ilike(unitys.name, `%${unit}%`) : undefined,
+            sector ? ilike(sectors.name, `%${sector}%`) : undefined,
             registration
-              ? eq(colaborators.registration, registration)
+              ? eq(collaborators.registration, registration)
               : undefined,
           ),
         )
-        .orderBy(unitys.name, sectors.name, colaborators.name)
+        .orderBy(unitys.name, sectors.name, collaborators.name)
         .limit(10)
         .offset(pageIndex * 10)
 
-      const [amountOfColaboratorsQuery, allColaborators] = await Promise.all([
+      const [amountOfCollaboratorsQuery, allCollaborators] = await Promise.all([
         db
           .select({ count: count() })
-          .from(colaborators)
-          .innerJoin(sectors, eq(sectors.id, colaborators.sectorId))
+          .from(collaborators)
+          .innerJoin(sectors, eq(sectors.id, collaborators.sectorId))
           .innerJoin(unitys, eq(unitys.id, sectors.unityId))
           .where(
             and(
-              eq(sectors.id, sector.id),
-              name ? ilike(colaborators.name, `%${name}%`) : undefined,
+              name ? ilike(collaborators.name, `%${name}%`) : undefined,
+              unit ? ilike(unitys.name, `%${unit}%`) : undefined,
+              sector ? ilike(sectors.name, `%${sector}%`) : undefined,
               registration
-                ? eq(colaborators.registration, registration)
+                ? eq(collaborators.registration, registration)
                 : undefined,
             ),
           ),
         baseQuery,
       ])
 
-      const amountOfColaborators = amountOfColaboratorsQuery[0].count
+      const amountOfCollaborators = amountOfCollaboratorsQuery[0].count
 
       return reply.status(200).send({
-        colaborators: allColaborators,
+        collaborators: allCollaborators,
         meta: {
           page_index: pageIndex,
           per_page: 10,
-          total_count: amountOfColaborators,
+          total_count: amountOfCollaborators,
         },
       })
     },

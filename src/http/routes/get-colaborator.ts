@@ -5,16 +5,16 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
-import { colaborators, sectors, unitys } from '../../database/schema'
+import { collaborators, sectors, unitys } from '../../database/schema'
 import { eq } from 'drizzle-orm'
 
 export async function getColaborator(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    '/colaborators/:colaboratorId',
+    '/collaborators/:colaboratorId',
     {
       schema: {
         summary: 'Get Colaborator',
-        tags: ['colaborators'],
+        tags: ['collaborators'],
         params: z.object({
           colaboratorId: z.string().cuid2(),
         }),
@@ -39,21 +39,21 @@ export async function getColaborator(app: FastifyInstance) {
       try {
         const { colaboratorId } = request.params
 
-        await db.query.colaborators.findFirst({})
+        await db.query.collaborators.findFirst({})
 
         const colaborator = await db
           .select({
-            colaborator_id: colaborators.id,
-            colaborator_name: colaborators.name,
-            colaborator_registration: colaborators.registration,
-            colaborator_cpf: colaborators.cpf,
+            colaborator_id: collaborators.id,
+            colaborator_name: collaborators.name,
+            colaborator_registration: collaborators.registration,
+            colaborator_cpf: collaborators.cpf,
             sector_name: sectors.name,
             unit_name: unitys.name,
           })
-          .from(colaborators)
-          .innerJoin(sectors, eq(sectors.id, colaborators.sectorId))
+          .from(collaborators)
+          .innerJoin(sectors, eq(sectors.id, collaborators.sectorId))
           .innerJoin(unitys, eq(unitys.id, sectors.unityId))
-          .where(eq(colaborators.id, colaboratorId))
+          .where(eq(collaborators.id, colaboratorId))
           .limit(1)
           .then((res) => res[0])
 

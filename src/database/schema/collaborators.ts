@@ -3,7 +3,7 @@ import { createId } from '@paralleldrive/cuid2'
 import { relations } from 'drizzle-orm'
 import { sectors } from './sectors'
 
-export const colaborators = pgTable('colaborators', {
+export const collaborators = pgTable('collaborators', {
   id: text('id')
     .$defaultFn(() => createId())
     .primaryKey(),
@@ -17,10 +17,10 @@ export const colaborators = pgTable('colaborators', {
   updatedAt: timestamp('updated_at').notNull().defaultNow(),
 })
 
-export const colaboratorsRelations = relations(colaborators, ({ one }) => {
+export const collaboratorsRelations = relations(collaborators, ({ one }) => {
   return {
     unity: one(sectors, {
-      fields: [colaborators.sectorId],
+      fields: [collaborators.sectorId],
       references: [sectors.id],
       relationName: 'colaborator_sector',
     }),

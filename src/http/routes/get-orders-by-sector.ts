@@ -4,7 +4,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
 import { and, count, eq, ilike } from 'drizzle-orm'
-import { colaborators, menus, orders } from '../../database/schema'
+import { collaborators, menus, orders } from '../../database/schema'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
 
 export async function getOrdersBySector(app: FastifyInstance) {
@@ -58,17 +58,17 @@ export async function getOrdersBySector(app: FastifyInstance) {
         .select({
           id: orders.id,
           menu: menus.name,
-          colaborator: colaborators.name,
+          colaborator: collaborators.name,
           date: orders.orderDate,
         })
         .from(orders)
         .innerJoin(menus, eq(menus.id, orders.menuId))
-        .innerJoin(colaborators, eq(colaborators.id, orders.colaboratorId))
+        .innerJoin(collaborators, eq(collaborators.id, orders.colaboratorId))
         .where(
           and(
-            eq(colaborators.sectorId, sector.id), // Filtra pelo setor do colaborador
+            eq(collaborators.sectorId, sector.id), // Filtra pelo setor do colaborador
             colaboratorName
-              ? ilike(colaborators.name, `%${colaboratorName}%`)
+              ? ilike(collaborators.name, `%${colaboratorName}%`)
               : undefined, // Filtra pelo nome do colaborador, se fornecido
           ),
         )
@@ -82,12 +82,12 @@ export async function getOrdersBySector(app: FastifyInstance) {
           .select({ count: count() })
           .from(orders)
           .innerJoin(menus, eq(menus.id, orders.menuId))
-          .innerJoin(colaborators, eq(colaborators.id, orders.colaboratorId))
+          .innerJoin(collaborators, eq(collaborators.id, orders.colaboratorId))
           .where(
             and(
-              eq(colaborators.sectorId, sector.id), // Filtra pelo setor
+              eq(collaborators.sectorId, sector.id), // Filtra pelo setor
               colaboratorName
-                ? ilike(colaborators.name, `%${colaboratorName}%`)
+                ? ilike(collaborators.name, `%${colaboratorName}%`)
                 : undefined,
             ),
           ),

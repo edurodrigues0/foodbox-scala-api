@@ -5,7 +5,7 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
-import { colaborators, orders, sectors, unitys } from '../../database/schema'
+import { collaborators, orders, sectors, unitys } from '../../database/schema'
 import { and, eq, gte, lte, sql } from 'drizzle-orm'
 import dayjs from 'dayjs'
 import { getCurrentOrders } from '../presenters/get-current-orders-presenters'
@@ -64,8 +64,8 @@ export async function getOrdersRestaurant(app: FastifyInstance) {
             ),
           })
           .from(orders)
-          .innerJoin(colaborators, eq(orders.colaboratorId, colaborators.id))
-          .innerJoin(sectors, eq(colaborators.sectorId, sectors.id))
+          .innerJoin(collaborators, eq(orders.colaboratorId, collaborators.id))
+          .innerJoin(sectors, eq(collaborators.sectorId, sectors.id))
           .innerJoin(unitys, eq(sectors.unityId, unitys.id))
           .where(
             and(

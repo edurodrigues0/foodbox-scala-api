@@ -1,7 +1,7 @@
 import { FastifyInstance } from 'fastify'
 import { createColaborator } from './create-colaborator'
 import { getColaborator } from './get-colaborator'
-import { getColaborators } from './get-colaborators'
+import { getCollaborators } from './get-collaborators'
 import { updateColaborator } from './update-colaborator'
 import { registerUsers } from './register-user'
 import { getRestaurant } from './get-restaurant'
@@ -17,7 +17,7 @@ import { deleteMenu } from './delete-menu'
 import { createOrders } from './create-orders'
 import { restaurantConnection } from './restaurant-connection'
 import { getMenuTodayAndTomorrow } from './get-menus-today-and-tomorrow'
-import { getColaboratorsOrderSummary } from './get-colaborators-orders-summary'
+import { getCollaboratorsOrderSummary } from './get-collaborators-orders-summary'
 import { getUnits } from './get-units'
 import { getProfile } from './get-profile'
 import { signOut } from './sign-out'
@@ -34,7 +34,7 @@ import { updateSector } from './update-sector'
 import { createRestaurant } from './create-restaurant'
 import { getRecentOrders } from './get-recent-orders'
 import { getOrdersRestaurant } from './get-orders-restaurant'
-import { getColaboratorsBySector } from './get-colaborators-by-sector'
+import { getCollaboratorsBySector } from './get-collaborators-by-sector'
 import { getOrdersBySector } from './get-orders-by-sector'
 import { deleteOrder } from './delete-order'
 
@@ -44,14 +44,14 @@ export async function Routes(app: FastifyInstance) {
   app.register(refresh)
   app.register(signOut)
 
-  // Colaborators
+  // Collaborators
   app.register(createColaborator)
   app.register(getColaborator)
-  app.register(getColaboratorsBySector)
-  app.register(getColaborators)
+  app.register(getCollaboratorsBySector)
+  app.register(getCollaborators)
   app.register(updateColaborator)
 
-  app.register(getColaboratorsOrderSummary)
+  app.register(getCollaboratorsOrderSummary)
 
   // Users
   app.register(registerUsers)

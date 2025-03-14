@@ -5,16 +5,16 @@ import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
 import { eq } from 'drizzle-orm'
-import { colaborators } from '../../database/schema'
+import { collaborators } from '../../database/schema'
 import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 
 export async function updateColaborator(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().put(
-    '/colaborators/:colaboratorId',
+    '/collaborators/:colaboratorId',
     {
       schema: {
-        summary: 'Update Colaborators',
-        tags: ['colaborators'],
+        summary: 'Update Collaborators',
+        tags: ['collaborators'],
         params: z.object({
           colaboratorId: z.string().cuid2(),
         }),
@@ -38,14 +38,14 @@ export async function updateColaborator(app: FastifyInstance) {
         const { colaboratorId } = request.params
 
         await db
-          .update(colaborators)
+          .update(collaborators)
           .set({
             name,
             cpf,
             sectorId,
             registration,
           })
-          .where(eq(colaborators.id, colaboratorId))
+          .where(eq(collaborators.id, colaboratorId))
 
         return reply.status(204).send()
       } catch (error) {

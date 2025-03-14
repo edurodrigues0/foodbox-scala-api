@@ -1,7 +1,7 @@
 import { createId } from '@paralleldrive/cuid2'
 import { relations } from 'drizzle-orm'
 import { integer, pgTable, text, timestamp } from 'drizzle-orm/pg-core'
-import { colaborators } from './colaborators'
+import { collaborators } from './collaborators'
 import { menus } from './menus'
 
 export const orders = pgTable('orders', {
@@ -10,7 +10,7 @@ export const orders = pgTable('orders', {
     .primaryKey(),
   colaboratorId: text('colaborator_id')
     .notNull()
-    .references(() => colaborators.id, {
+    .references(() => collaborators.id, {
       onDelete: 'set null',
     }),
   menuId: text('menu_id')
@@ -22,9 +22,9 @@ export const orders = pgTable('orders', {
 
 export const ordersRelations = relations(orders, ({ one }) => {
   return {
-    colaborators: one(colaborators, {
+    collaborators: one(collaborators, {
       fields: [orders.colaboratorId],
-      references: [colaborators.id],
+      references: [collaborators.id],
       relationName: 'orders_colaborator',
     }),
   }

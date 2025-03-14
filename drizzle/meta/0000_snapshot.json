@@ -4,8 +4,8 @@
   "version": "7",
   "dialect": "postgresql",
   "tables": {
-    "public.colaborators": {
-      "name": "colaborators",
+    "public.collaborators": {
+      "name": "collaborators",
       "schema": "",
       "columns": {
         "id": {
@@ -62,9 +62,9 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "colaborators_sector_id_sectors_id_fk": {
-          "name": "colaborators_sector_id_sectors_id_fk",
-          "tableFrom": "colaborators",
+        "collaborators_sector_id_sectors_id_fk": {
+          "name": "collaborators_sector_id_sectors_id_fk",
+          "tableFrom": "collaborators",
           "tableTo": "sectors",
           "columnsFrom": [
             "sector_id"
@@ -78,22 +78,22 @@
       },
       "compositePrimaryKeys": {},
       "uniqueConstraints": {
-        "colaborators_registration_unique": {
-          "name": "colaborators_registration_unique",
+        "collaborators_registration_unique": {
+          "name": "collaborators_registration_unique",
           "nullsNotDistinct": false,
           "columns": [
             "registration"
           ]
         },
-        "colaborators_cpf_unique": {
-          "name": "colaborators_cpf_unique",
+        "collaborators_cpf_unique": {
+          "name": "collaborators_cpf_unique",
           "nullsNotDistinct": false,
           "columns": [
             "cpf"
           ]
         },
-        "colaborators_hmac_cpf_unique": {
-          "name": "colaborators_hmac_cpf_unique",
+        "collaborators_hmac_cpf_unique": {
+          "name": "collaborators_hmac_cpf_unique",
           "nullsNotDistinct": false,
           "columns": [
             "hmac_cpf"
@@ -344,10 +344,10 @@
       },
       "indexes": {},
       "foreignKeys": {
-        "orders_colaborator_id_colaborators_id_fk": {
-          "name": "orders_colaborator_id_colaborators_id_fk",
+        "orders_colaborator_id_collaborators_id_fk": {
+          "name": "orders_colaborator_id_collaborators_id_fk",
           "tableFrom": "orders",
-          "tableTo": "colaborators",
+          "tableTo": "collaborators",
           "columnsFrom": [
             "colaborator_id"
           ],

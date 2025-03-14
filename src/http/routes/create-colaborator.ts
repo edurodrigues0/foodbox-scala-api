@@ -4,16 +4,16 @@ import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 
 import { db } from '../../database/connection'
-import { colaborators } from '../../database/schema'
+import { collaborators } from '../../database/schema'
 import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 
 export async function createColaborator(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
-    '/colaborators',
+    '/collaborators',
     {
       schema: {
         summary: 'Create Colaborator',
-        tags: ['colaborators'],
+        tags: ['collaborators'],
         body: z.object({
           name: z.string().min(3).max(100),
           registration: z.number(),
@@ -34,7 +34,7 @@ export async function createColaborator(app: FastifyInstance) {
       try {
         const { name, cpf, registration, sectorId } = request.body
 
-        const colaboratorAlreadyExist = await db.query.colaborators.findFirst({
+        const colaboratorAlreadyExist = await db.query.collaborators.findFirst({
           where(fields, { eq }) {
             return eq(fields.cpf, cpf)
           },
@@ -45,7 +45,7 @@ export async function createColaborator(app: FastifyInstance) {
         }
 
         const [colaborator] = await db
-          .insert(colaborators)
+          .insert(collaborators)
           .values({
             name,
             cpf,
@@ -53,7 +53,7 @@ export async function createColaborator(app: FastifyInstance) {
             registration,
           })
           .returning({
-            name: colaborators.name,
+            name: collaborators.name,
           })
 
         return reply.status(201).send({ colaborator_name: colaborator.name })

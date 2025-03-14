@@ -3,7 +3,7 @@ import { z } from 'zod'
 import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { db } from '../../database/connection'
-import { orders, colaborators } from '../../database/schema'
+import { orders, collaborators } from '../../database/schema'
 import { and, gte, lte, sum, eq, count } from 'drizzle-orm'
 import { getRecentOrdersPresenters } from '../presenters/get-recent-orders-presenters'
 
@@ -51,19 +51,19 @@ export async function getRecentOrders(app: FastifyInstance) {
 
       const baseQuery = db
         .select({
-          id: colaborators.id,
-          name: colaborators.name,
-          cpf: colaborators.cpf,
-          registration: colaborators.registration,
+          id: collaborators.id,
+          name: collaborators.name,
+          cpf: collaborators.cpf,
+          registration: collaborators.registration,
           totalSpent: sum(orders.price).as('totalSpent'),
           totalOrders: count(orders.id).as('totalOrders'),
         })
         .from(orders)
-        .leftJoin(colaborators, eq(orders.colaboratorId, colaborators.id))
+        .leftJoin(collaborators, eq(orders.colaboratorId, collaborators.id))
         .where(
           and(gte(orders.orderDate, lastMonth), lte(orders.orderDate, today)),
         )
-        .groupBy(colaborators.id, colaborators.name)
+        .groupBy(collaborators.id, collaborators.name)
 
       const [totalCountQuery, recentOrders] = await Promise.all([
         db.select({ count: count() }).from(baseQuery.as('baseQuery')),

@@ -34,7 +34,7 @@ export async function createOrders(app: FastifyInstance) {
       const { cpf, restaurantId, orderDate, menuId } = request.body
 
       try {
-        const colaborator = await db.query.colaborators.findFirst({
+        const colaborator = await db.query.collaborators.findFirst({
           columns: {
             id: true,
             name: true,
