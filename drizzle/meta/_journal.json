@@ -5,29 +5,8 @@
     {
       "idx": 0,
       "version": "7",
-      "when": 1736277480783,
-      "tag": "0000_damp_grey_gargoyle",
-      "breakpoints": true
-    },
-    {
-      "idx": 1,
-      "version": "7",
-      "when": 1737749774878,
-      "tag": "0001_chilly_sumo",
-      "breakpoints": true
-    },
-    {
-      "idx": 2,
-      "version": "7",
-      "when": 1738350420108,
-      "tag": "0002_cultured_power_man",
-      "breakpoints": true
-    },
-    {
-      "idx": 3,
-      "version": "7",
-      "when": 1741895858048,
-      "tag": "0003_magenta_slipstream",
+      "when": 1741995475527,
+      "tag": "0000_handy_la_nuit",
       "breakpoints": true
     }
   ]
