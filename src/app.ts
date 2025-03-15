@@ -20,7 +20,7 @@ import cors from '@fastify/cors'
 export const app = fastify()
 
 app.register(cors, {
-  origin: true,
+  origin: '*',
   credentials: true,
 })
 
@@ -76,7 +76,7 @@ app.setErrorHandler((error, request, reply) => {
   //   })
   // }
 
-  if (env.NODE_ENV !== 'prod') {
+  if (env.NODE_ENV !== 'production') {
     console.error(error)
   } else {
     // TODO: Here we should log to an external tool like DataDog / NewRelic / Sentry
