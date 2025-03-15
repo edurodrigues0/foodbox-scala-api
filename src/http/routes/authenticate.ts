@@ -90,8 +90,9 @@ export async function authenticate(app: FastifyInstance) {
             path: '/',
             secure: true,
             httpOnly: true,
+            sameSite: 'none',
           })
-          .header('access-control-allow-credentials', 'true')
+          .header('Access-Control-Allow-Credentials', 'true')
           .status(200)
           .send({
             auth_metadata: {
