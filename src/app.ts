@@ -69,6 +69,12 @@ app.setErrorHandler((error, request, reply) => {
       message: 'Validation error.',
       issues: error.flatten().fieldErrors,
     })
+
+    console.error('INTERNAL SERVER ERROR', error)
+    return reply.status(500).send({
+      message: 'Internal server error.',
+      error,
+    })
   }
 
   // if (!request.cookies.Authorization) {
