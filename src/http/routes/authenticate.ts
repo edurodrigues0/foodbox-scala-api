@@ -109,6 +109,7 @@ export async function authenticate(app: FastifyInstance) {
           })
         }
 
+        console.log(error)
         throw error
       }
     },
