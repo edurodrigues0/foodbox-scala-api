@@ -37,6 +37,7 @@ import { getOrdersRestaurant } from './get-orders-restaurant'
 import { getCollaboratorsBySector } from './get-collaborators-by-sector'
 import { getOrdersBySector } from './get-orders-by-sector'
 import { deleteOrder } from './delete-order'
+import { getOrdersForCurrentBillingCycle } from './get-orders-for-current-billing-cycle'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -78,6 +79,7 @@ export async function Routes(app: FastifyInstance) {
   app.register(getOrdersRestaurant)
   app.register(getOrdersBySector)
   app.register(deleteOrder)
+  app.register(getOrdersForCurrentBillingCycle)
 
   // Units
   app.register(createUnit)

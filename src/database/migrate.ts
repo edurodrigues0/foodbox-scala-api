@@ -11,9 +11,9 @@ const connection = postgres(env.DATABASE_URL, { max: 1 })
 const db = drizzle(connection)
 
 export const up = async (db: PostgresJsDatabase) => {
-  await db.execute(sql`
-    DROP TYPE IF EXISTS "public"."role" CASCADE;
-  `)
+  await db.execute(
+    sql`ALTER TABLE users ADD COLUMN role TEXT CHECK (role IN ('admin', 'restaurant', 'rh', 'supervisor')) NOT NULL DEFAULT 'restaurant';`,
+  )
 }
 
 async function runMigration() {

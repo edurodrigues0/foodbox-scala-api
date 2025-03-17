@@ -8,7 +8,7 @@ export const sectors = pgTable('sectors', {
   id: text('id')
     .$defaultFn(() => createId())
     .primaryKey(),
-  name: varchar({ length: 24 }).notNull(),
+  name: varchar({ length: 100 }).notNull(),
   unityId: text('unity_id').references(() => unitys.id, {
     onDelete: 'cascade',
   }),

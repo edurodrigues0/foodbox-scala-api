@@ -17,7 +17,6 @@ export async function registerUsers(app: FastifyInstance) {
         body: z.object({
           name: z.string(),
           email: z.string().email(),
-          password: z.string().default('Scala.food@2025'),
           role: z.enum([...userRoleEnum.enumValues]).optional(),
           restaurantName: z.string().optional(),
           unitId: z.string().cuid2().optional(),
@@ -35,7 +34,7 @@ export async function registerUsers(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const { name, email, password, role, sectorId } = request.body
+        const { name, email, role, sectorId } = request.body
 
         const userWithSameEmail = await db.query.users.findFirst({
           where(fields, { eq }) {
@@ -47,7 +46,7 @@ export async function registerUsers(app: FastifyInstance) {
           throw new DataAlreadyExistsError()
         }
 
-        const hashPassword = await hash(password, 6)
+        const hashPassword = await hash('Scala.food@2025', 6)
 
         const [user] = await db
           .insert(users)

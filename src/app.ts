@@ -69,22 +69,22 @@ app.setErrorHandler((error, request, reply) => {
       message: 'Validation error.',
       issues: error.flatten().fieldErrors,
     })
-
-    console.error('INTERNAL SERVER ERROR', error)
-    return reply.status(500).send({
-      message: 'Internal server error.',
-      error,
-    })
   }
-
   // if (!request.cookies.Authorization) {
   //   return reply.status(401).send({
   //     message: 'Authorization token not found in cookie.',
   //   })
   // }
 
+  console.error('INTERNAL SERVER ERROR', error)
+
   if (env.NODE_ENV !== 'production') {
     console.error(error)
+
+    return reply.status(500).send({
+      message: 'Internal server error.',
+      error,
+    })
   } else {
     // TODO: Here we should log to an external tool like DataDog / NewRelic / Sentry
   }
