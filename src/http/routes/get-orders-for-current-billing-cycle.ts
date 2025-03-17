@@ -7,12 +7,12 @@ import dayjs from 'dayjs'
 
 export async function getOrdersForCurrentBillingCycle(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
-    '/current-orders/:cpf',
+    '/orders-for-current-billing-cycle',
     {
       schema: {
         summary: 'Get Current Orders',
         tags: ['orders'],
-        params: z.object({
+        querystring: z.object({
           cpf: z.string(),
         }),
         response: {
@@ -31,7 +31,7 @@ export async function getOrdersForCurrentBillingCycle(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const { cpf } = request.params
+        const { cpf } = request.query
 
         const today = dayjs()
         const currentDay = today.date()
