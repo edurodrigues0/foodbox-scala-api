@@ -1,11 +1,11 @@
 import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
 import { db } from '../../database/connection'
-import { menus, orders, restaurants } from '../../database/schema'
+import { orders } from '../../database/schema'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
 import { z } from 'zod'
-import { restaurantConnections } from '../../utils/connection-manager'
-import { eq } from 'drizzle-orm'
+import dayjs from 'dayjs'
+import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 
 export async function createOrders(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -31,7 +31,7 @@ export async function createOrders(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { cpf, restaurantId, orderDate, menuId } = request.body
+      const { cpf, orderDate, menuId } = request.body
 
       try {
         const colaborator = await db.query.collaborators.findFirst({
@@ -48,6 +48,21 @@ export async function createOrders(app: FastifyInstance) {
           throw new ResourceNotFoundError()
         }
 
+        const order = await db.query.orders.findFirst({
+          where(fields, { eq, and }) {
+            return and(
+              eq(fields.colaboratorId, colaborator.id),
+              eq(fields.orderDate, new Date(orderDate)),
+            )
+          },
+        })
+
+        if (order) {
+          if (dayjs(order.orderDate).isSame(dayjs(orderDate))) {
+            throw new DataAlreadyExistsError()
+          }
+        }
+
         await db
           .insert(orders)
           .values({
@@ -57,21 +72,6 @@ export async function createOrders(app: FastifyInstance) {
             menuId,
           })
           .returning()
-
-        if (restaurantConnections.has(restaurantId)) {
-          const currentOrders = await db
-            .select({
-              orderId: orders.id,
-            })
-            .from(orders)
-            .innerJoin(menus, eq(orders.menuId, menus.id))
-            .innerJoin(restaurants, eq(menus.restaurantId, restaurants.id))
-            .where(eq(restaurants.id, restaurantId))
-
-          restaurantConnections
-            .get(restaurantId)
-            ?.send(JSON.stringify(currentOrders))
-        }
 
         return reply.status(201).send({
           name: colaborator.name,
