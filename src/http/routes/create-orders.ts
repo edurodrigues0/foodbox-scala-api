@@ -15,7 +15,7 @@ export async function createOrders(app: FastifyInstance) {
         summary: 'Create Order',
         tags: ['orders'],
         body: z.object({
-          cpf: z.string(),
+          registration: z.number(),
           restaurantId: z.string().cuid2(),
           menuId: z.string().cuid2(),
           orderDate: z.string(),
@@ -31,7 +31,7 @@ export async function createOrders(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      const { cpf, orderDate, menuId } = request.body
+      const { registration, orderDate, menuId } = request.body
 
       try {
         const colaborator = await db.query.collaborators.findFirst({
@@ -40,7 +40,7 @@ export async function createOrders(app: FastifyInstance) {
             name: true,
           },
           where(fields, { eq }) {
-            return eq(fields.cpf, cpf)
+            return eq(fields.registration, registration)
           },
         })
 

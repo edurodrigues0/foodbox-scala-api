@@ -38,6 +38,7 @@ import { getCollaboratorsBySector } from './get-collaborators-by-sector'
 import { getOrdersBySector } from './get-orders-by-sector'
 import { deleteOrder } from './delete-order'
 import { getOrdersForCurrentBillingCycle } from './get-orders-for-current-billing-cycle'
+import { getColaboratorByRegistration } from './get-colaborator-by-registation'
 
 export async function Routes(app: FastifyInstance) {
   // Auth
@@ -51,6 +52,7 @@ export async function Routes(app: FastifyInstance) {
   app.register(getCollaboratorsBySector)
   app.register(getCollaborators)
   app.register(updateColaborator)
+  app.register(getColaboratorByRegistration)
 
   app.register(getCollaboratorsOrderSummary)
 
