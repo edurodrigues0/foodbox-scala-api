@@ -13,7 +13,7 @@ export async function getOrdersForCurrentBillingCycle(app: FastifyInstance) {
         summary: 'Get Current Orders',
         tags: ['orders'],
         querystring: z.object({
-          cpf: z.string(),
+          registration: z.coerce.number(),
         }),
         response: {
           200: z.object({
@@ -31,7 +31,7 @@ export async function getOrdersForCurrentBillingCycle(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        const { cpf } = request.query
+        const { registration } = request.query
 
         const today = dayjs()
         const currentDay = today.date()
@@ -55,7 +55,7 @@ export async function getOrdersForCurrentBillingCycle(app: FastifyInstance) {
             name: true,
           },
           where(fields, { eq }) {
-            return eq(fields.cpf, cpf)
+            return eq(fields.registration, registration)
           },
         })
 
