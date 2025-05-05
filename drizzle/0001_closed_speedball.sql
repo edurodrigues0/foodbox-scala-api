@@ -1,1 +1,0 @@
-ALTER TABLE "sectors" ALTER COLUMN "name" SET DATA TYPE varchar(100);

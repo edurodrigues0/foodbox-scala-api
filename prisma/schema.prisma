@@ -1,0 +1,101 @@
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+enum Role {
+  admin
+  rh
+  supervisor
+  restaurant
+}
+
+model User {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(100)
+  email     String   @unique @db.VarChar(100)
+  password  String
+  role      Role     @default(supervisor)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  restaurants Restaurant[] @relation("restaurant_manager")
+  sectors     Sector[]     @relation("sector_user")
+}
+
+model Restaurant {
+  id        String  @id @default(cuid())
+  name      String
+  managerId String?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @default(now())
+
+  manager User?   @relation("restaurant_manager", fields: [managerId], references: [id], onDelete: SetNull)
+  units   Unity[]
+  menus   Menu[]
+}
+
+model Unity {
+  id           String  @id @default(cuid())
+  name         String  @db.VarChar(24)
+  unity        Int?    @unique
+  restaurantId String?
+
+  restaurant Restaurant? @relation(fields: [restaurantId], references: [id], onDelete: SetNull)
+  sectors    Sector[]
+}
+
+model Sector {
+  id        String   @id @default(cuid())
+  name      String   @db.VarChar(100)
+  unityId   String?
+  userId    String?
+  createdAt DateTime @default(now())
+
+  unity         Unity?         @relation(fields: [unityId], references: [id], onDelete: Cascade)
+  user          User?          @relation("sector_user", fields: [userId], references: [id], onDelete: SetNull)
+  collaborators Collaborator[]
+}
+
+model Collaborator {
+  id           String   @id @default(cuid())
+  name         String   @db.VarChar(100)
+  registration Int      @unique
+  cpf          String   @unique
+  sectorId     String?  @default("1")
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  sector Sector? @relation(fields: [sectorId], references: [id])
+  orders Order[]
+}
+
+model Menu {
+  id           String   @id @default(cuid())
+  name         String   @db.VarChar(40)
+  serviceDate  DateTime
+  description  String[]
+  restaurantId String
+  allergens    String?
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @default(now())
+
+  restaurant Restaurant @relation(fields: [restaurantId], references: [id], onDelete: Cascade)
+  orders     Order[]
+}
+
+model Order {
+  id            String   @id @default(cuid())
+  colaboratorId String?
+  menuId        String
+  orderDate     DateTime
+  price         Int
+
+  collaborator Collaborator? @relation(fields: [colaboratorId], references: [id], onDelete: SetNull)
+  menu         Menu          @relation(fields: [menuId], references: [id])
+}

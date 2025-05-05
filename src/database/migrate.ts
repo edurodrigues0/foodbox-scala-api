@@ -12,12 +12,12 @@ const db = drizzle(connection)
 
 export const up = async (db: PostgresJsDatabase) => {
   await db.execute(
-    sql`ALTER TABLE users ADD COLUMN role TEXT CHECK (role IN ('admin', 'restaurant', 'rh', 'supervisor')) NOT NULL DEFAULT 'restaurant';`,
+    sql`ALTER TABLE "User" ADD COLUMN role TEXT CHECK (role IN ('admin', 'restaurant', 'rh', 'supervisor')) NOT NULL DEFAULT 'restaurant';`,
   )
 }
 
 async function runMigration() {
-  await up(db)
+  // await up(db)
   await migrate(db, { migrationsFolder: 'drizzle' })
   await connection.end()
 

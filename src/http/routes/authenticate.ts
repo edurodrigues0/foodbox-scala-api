@@ -85,12 +85,14 @@ export async function authenticate(app: FastifyInstance) {
           },
         )
 
+        const { password: _, ...userWithoutPassword } = user
+
         return reply
           .setCookie('refreshToken', refreshToken, {
             path: '/',
-            secure: true,
+            secure: false,
             httpOnly: true,
-            sameSite: 'none',
+            sameSite: 'lax',
           })
           .header('Access-Control-Allow-Credentials', 'true')
           .status(200)
@@ -98,10 +100,7 @@ export async function authenticate(app: FastifyInstance) {
             auth_metadata: {
               token,
             },
-            user: {
-              ...user,
-              password: undefined,
-            },
+            user: userWithoutPassword,
           })
       } catch (error) {
         if (error instanceof InvalidCredentialsError) {

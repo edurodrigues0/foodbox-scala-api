@@ -59,7 +59,7 @@ CREATE TABLE "unitys" (
 --> statement-breakpoint
 CREATE TABLE "sectors" (
 	"id" text PRIMARY KEY NOT NULL,
-	"name" varchar(24) NOT NULL,
+	"name" varchar(100) NOT NULL,
 	"unity_id" text,
 	"user_id" text,
 	"created_at" timestamp DEFAULT now() NOT NULL
