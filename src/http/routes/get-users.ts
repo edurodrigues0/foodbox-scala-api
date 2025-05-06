@@ -6,6 +6,7 @@ import { and, count, ne, ilike, eq } from 'drizzle-orm'
 import { sectors, unitys, userRoleEnum, users } from '../../database/schema'
 import { z } from 'zod'
 import { UnauthorizedError } from '../../errors/unauthorized'
+import { ForbiddenError } from '../../errors/forbidden'
 
 export async function getUsers(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().get(
@@ -43,9 +44,11 @@ export async function getUsers(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        await request.jwtVerify({ onlyCookie: true })
+        await request.jwtVerify()
+
         const { sub } = request.user
         const { pageIndex, userName } = request.query
+
 
         const user = await db.query.users.findFirst({
           columns: {
@@ -59,7 +62,7 @@ export async function getUsers(app: FastifyInstance) {
         })
 
         if (user && user.role !== 'rh') {
-          throw new UnauthorizedError()
+          throw new ForbiddenError()
         }
 
         const baseQuery = db
@@ -101,6 +104,12 @@ export async function getUsers(app: FastifyInstance) {
         console.log(error)
         if (error instanceof UnauthorizedError) {
           return reply.status(401).send({
+            message: error.message,
+          })
+        }
+        
+        if (error instanceof ForbiddenError) {
+          return reply.status(403).send({
             message: error.message,
           })
         }

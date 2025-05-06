@@ -20,7 +20,7 @@ export async function signOut(app: FastifyInstance) {
     },
     async (_, reply) => {
       try {
-        reply.clearCookie('refreshToken', {
+        reply.clearCookie('token', {
           path: '/',
         })
 

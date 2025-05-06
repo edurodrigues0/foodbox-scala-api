@@ -99,8 +99,6 @@ export async function getRecentOrders(app: FastifyInstance) {
         baseQuery.offset(pageIndex * 10).limit(10),
       ])
 
-      console.log(recentOrders)
-
       const totalOfAllOrders = Number(totalCountQuery[0].count)
 
       return reply.status(200).send({

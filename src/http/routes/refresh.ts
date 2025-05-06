@@ -31,7 +31,7 @@ export async function refresh(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        await request.jwtVerify({ onlyCookie: true })
+        await request.jwtVerify()
 
         const { role, sub } = request.user
 

@@ -9,6 +9,7 @@ import { menus } from '../../database/schema'
 import { DataAlreadyExistsError } from '../../errors/data-already-existis'
 import { UnauthorizedError } from '../../errors/unauthorized'
 import { ResourceNotFoundError } from '../../errors/resource-not-found'
+import { ForbiddenError } from '../../errors/forbidden'
 
 export async function createMenu(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
@@ -40,13 +41,13 @@ export async function createMenu(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      await request.jwtVerify({ onlyCookie: true })
+      await request.jwtVerify()
 
       try {
         const { role, sub } = request.user
 
         if (role !== 'restaurant') {
-          throw new UnauthorizedError()
+          throw new ForbiddenError()
         }
 
         const { name, description, serviceDate, allergens } = request.body
@@ -93,6 +94,10 @@ export async function createMenu(app: FastifyInstance) {
       } catch (error) {
         if (error instanceof UnauthorizedError) {
           return reply.status(401).send({ message: error.message })
+        }
+
+        if (error instanceof ForbiddenError) {
+          return reply.status(403).send({ message: error.message })
         }
 
         if (error instanceof ResourceNotFoundError) {

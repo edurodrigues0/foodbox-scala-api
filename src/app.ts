@@ -22,7 +22,6 @@ export const app = fastify()
 app.register(cors, {
   origin: true,
   credentials: true,
-  methods: ['GET', 'POST', 'PUT', 'PATCH', 'DELETE'],
 })
 
 app.register(fastifySwagger, {
@@ -53,7 +52,7 @@ app.register(fastifyCookie)
 app.register(fastifyJwt, {
   secret: env.JWT_SECRET,
   cookie: {
-    cookieName: 'refreshToken',
+    cookieName: 'token',
     signed: false,
   },
   sign: {
@@ -70,11 +69,11 @@ app.setErrorHandler((error, request, reply) => {
       issues: error.flatten().fieldErrors,
     })
   }
-  // if (!request.cookies.Authorization) {
-  //   return reply.status(401).send({
-  //     message: 'Authorization token not found in cookie.',
-  //   })
-  // }
+  if (!request.headers.authorization) {
+    return reply.status(401).send({
+      message: 'Authorization token not found.',
+    })
+  }
 
   console.error('INTERNAL SERVER ERROR', error)
 

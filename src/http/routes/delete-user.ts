@@ -8,6 +8,7 @@ import { ResourceNotFoundError } from '../../errors/resource-not-found'
 import { UnauthorizedError } from '../../errors/unauthorized'
 import { eq } from 'drizzle-orm'
 import { users } from '../../database/schema'
+import { ForbiddenError } from '../../errors/forbidden'
 
 export async function deleteUser(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().delete(
@@ -31,7 +32,7 @@ export async function deleteUser(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      request.jwtVerify({ onlyCookie: true })
+      request.jwtVerify()
       const { sub } = request.user
       try {
         const { userId } = request.params
@@ -47,7 +48,7 @@ export async function deleteUser(app: FastifyInstance) {
         }
 
         if (user.role === 'restaurant' || user.role !== 'supervisor') {
-          throw new UnauthorizedError()
+          throw new ForbiddenError()
         }
 
         if (user.id === sub) {
@@ -58,16 +59,21 @@ export async function deleteUser(app: FastifyInstance) {
 
         return reply.status(200).send()
       } catch (error) {
-        if (error instanceof ResourceNotFoundError) {
-          return reply.status(404).send({ message: error.message })
-        }
-
         if (error instanceof UnauthorizedError) {
           return reply.status(401).send({
             message: error.message,
           })
         }
 
+        if (error instanceof ForbiddenError) {
+          return reply.status(403).send({
+            message: error.message,
+          })
+        }
+
+        if (error instanceof ResourceNotFoundError) {
+          return reply.status(404).send({ message: error.message })
+        }
         throw error
       }
     },

@@ -1,16 +1,17 @@
 import { FastifyInstance } from 'fastify'
 import { ZodTypeProvider } from 'fastify-type-provider-zod'
-import { undefined, z } from 'zod'
+import { z } from 'zod'
 import { db } from '../../database/connection'
 import { compare } from 'bcrypt'
 import { InvalidCredentialsError } from '../../errors/invalid-credentials'
+import { env } from '../../env'
 
 export async function authenticate(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().post(
     '/auth/login',
     {
       schema: {
-        summary: 'Authenticate User',
+        summary: 'Authenticate User (via Bearer)',
         tags: ['auth'],
         body: z.object({
           email: z.string().email(),
@@ -73,35 +74,16 @@ export async function authenticate(app: FastifyInstance) {
           },
         )
 
-        const refreshToken = await reply.jwtSign(
-          {
-            role: user.role,
-          },
-          {
-            sign: {
-              sub: user.id,
-              expiresIn: '7d',
-            },
-          },
-        )
-
         const { password: _, ...userWithoutPassword } = user
 
         return reply
-          .setCookie('refreshToken', refreshToken, {
-            path: '/',
-            secure: false,
-            httpOnly: true,
-            sameSite: 'lax',
-          })
-          .header('Access-Control-Allow-Credentials', 'true')
-          .status(200)
-          .send({
-            auth_metadata: {
-              token,
-            },
-            user: userWithoutPassword,
-          })
+        .status(200)
+        .send({
+          auth_metadata: {
+            token,
+          },
+          user: userWithoutPassword,
+        })
       } catch (error) {
         if (error instanceof InvalidCredentialsError) {
           return reply.status(400).send({
@@ -109,7 +91,7 @@ export async function authenticate(app: FastifyInstance) {
           })
         }
 
-        console.log(error)
+        console.error(error)
         throw error
       }
     },

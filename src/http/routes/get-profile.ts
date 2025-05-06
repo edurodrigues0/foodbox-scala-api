@@ -31,7 +31,8 @@ export async function getProfile(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
-        await request.jwtVerify({ onlyCookie: true })
+        await request.jwtVerify()
+
         const { sub } = request.user
 
         const user = await db.query.users.findFirst({

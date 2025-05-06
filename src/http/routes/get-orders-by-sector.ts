@@ -38,7 +38,7 @@ export async function getOrdersBySector(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      await request.jwtVerify({ onlyCookie: true })
+      await request.jwtVerify()
       const { sub } = request.user
       const { pageIndex, colaboratorName } = request.query
 

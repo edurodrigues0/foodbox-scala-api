@@ -40,8 +40,8 @@ export async function getMenus(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      await request.jwtVerify({ onlyCookie: true })
-
+      await request.jwtVerify()
+      
       const { sub } = request.user
 
       const { pageIndex } = request.query

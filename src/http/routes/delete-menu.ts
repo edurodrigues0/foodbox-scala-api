@@ -9,6 +9,7 @@ import { menus } from '../../database/schema'
 import { eq } from 'drizzle-orm'
 import dayjs from 'dayjs'
 import { UnauthorizedError } from '../../errors/unauthorized'
+import { ForbiddenError } from '../../errors/forbidden'
 
 export async function deleteMenu(app: FastifyInstance) {
   app.withTypeProvider<ZodTypeProvider>().delete(
@@ -30,6 +31,8 @@ export async function deleteMenu(app: FastifyInstance) {
     },
     async (request, reply) => {
       try {
+        await request.jwtVerify()
+        
         const { menuId } = request.params
 
         const menu = await db.query.menus.findFirst({
@@ -52,13 +55,17 @@ export async function deleteMenu(app: FastifyInstance) {
         if (deleteLimitTime >= 2) {
           await db.delete(menus).where(eq(menus.id, menuId))
         } else {
-          throw new UnauthorizedError()
+          throw new ForbiddenError()
         }
 
         return reply.status(200).send()
       } catch (error) {
         if (error instanceof ResourceNotFoundError) {
           return reply.status(404).send({ message: error.message })
+        }
+
+        if (error instanceof ForbiddenError) {
+          return reply.status(403).send({ message: error.message })
         }
 
         if (error instanceof UnauthorizedError) {

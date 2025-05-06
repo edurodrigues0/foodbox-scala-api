@@ -40,7 +40,7 @@ export async function getCollaboratorsBySector(app: FastifyInstance) {
       },
     },
     async (request, reply) => {
-      await request.jwtVerify({ onlyCookie: true })
+      await request.jwtVerify()
       const { sub } = request.user
 
       const { pageIndex, name, registration } = request.query
