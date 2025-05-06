@@ -41,57 +41,55 @@ export async function createMenu(app: FastifyInstance) {
     },
     async (request, reply) => {
       await request.jwtVerify({ onlyCookie: true })
+
       try {
         const { role, sub } = request.user
 
-        if (role === 'restaurant') {
-          const { name, description, serviceDate, allergens } = request.body
-          const serviceDateFormated = dayjs(serviceDate)
-
-          const restaurant = await db.query.restaurants.findFirst({
-            columns: {
-              id: true,
-            },
-            where(fields, { eq }) {
-              return eq(fields.managerId, sub)
-            },
-          })
-
-          if (!restaurant) {
-            throw new ResourceNotFoundError()
-          }
-
-          const menuWithSameDayInMonth = await db.query.menus.findFirst({
-            where(fields, { gte, lte, and }) {
-              return and(
-                lte(
-                  fields.serviceDate,
-                  serviceDateFormated.endOf('day').toDate(),
-                ),
-                gte(fields.serviceDate, serviceDateFormated.toDate()),
-              )
-            },
-          })
-
-          if (menuWithSameDayInMonth) {
-            throw new DataAlreadyExistsError()
-          }
-
-          const [menu] = await db
-            .insert(menus)
-            .values({
-              name,
-              description,
-              serviceDate: serviceDateFormated.toDate(),
-              allergens,
-              restaurantId: restaurant.id,
-            })
-            .returning()
-
-          return reply.status(201).send({ menu_name: menu.name })
-        } else {
+        if (role !== 'restaurant') {
           throw new UnauthorizedError()
         }
+
+        const { name, description, serviceDate, allergens } = request.body
+        const serviceDateFormatted = dayjs(serviceDate).startOf('day')
+
+        const restaurant = await db.query.restaurants.findFirst({
+          columns: {
+            id: true,
+          },
+          where(fields, { eq }) {
+            return eq(fields.managerId, sub)
+          },
+        })
+
+        if (!restaurant) {
+          throw new ResourceNotFoundError()
+        }
+
+        const menuWithSameDate = await db.query.menus.findFirst({
+          where(fields, { and, eq }) {
+            return and(
+              eq(fields.restaurantId, restaurant.id),
+              eq(fields.serviceDate, serviceDateFormatted.toDate()),
+            )
+          },
+        })
+
+        if (menuWithSameDate) {
+          throw new DataAlreadyExistsError()
+        }
+
+        const [menu] = await db
+          .insert(menus)
+          .values({
+            name,
+            description,
+            serviceDate: serviceDateFormatted.toDate(),
+            allergens,
+            restaurantId: restaurant.id,
+          })
+          .returning()
+
+        return reply.status(201).send({ menu_name: menu.name })
       } catch (error) {
         if (error instanceof UnauthorizedError) {
           return reply.status(401).send({ message: error.message })
@@ -105,7 +103,8 @@ export async function createMenu(app: FastifyInstance) {
           return reply.status(409).send({ message: error.message })
         }
 
-        throw error
+        console.log('Unhandled error on POST /menus:', error)
+        return reply.status(500).send({ message: 'Internal server error' })
       }
     },
   )
